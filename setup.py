@@ -421,8 +421,7 @@ if __name__ == "__main__":
     for device in deviceList:
         print("%s: %s" % (counter, device))
         counter += 1
-    #input_select = int(input("Select 0-%s: " % str(len(deviceList)-1)))
-    input_select = 0
+    input_select = int(input("Select 0-%s: " % str(len(deviceList)-1)))
     if input_select in range(0, len(deviceList)):
         print("You selected: %s (%s)" % (str(input_select), deviceList[input_select]))
         Search = Query()
