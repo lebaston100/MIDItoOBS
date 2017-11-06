@@ -1,1 +1,2 @@
 python setup.py
+pause
