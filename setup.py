@@ -39,7 +39,7 @@ ignore = 255
 savetime1 = time.time()
 
 def exitScript():
-    port.close()
+    midiport.close()
     print("Exiting")
     sys.exit()
 
@@ -90,6 +90,7 @@ def midicallback(message):
         except ValueError:
             print("Please try again and enter a valid number")
 
+#I know this is kinda messy, but i challange you to make a better version(as a plugin or pull requestto obs-studio)
 def setupFaderEvents(action, NoC, msgType):
     print()
     print("You selected: %s" % action)
@@ -361,6 +362,7 @@ def updateSceneList():
     sceneListShort = []
     sceneListLong = []
     if jsn["message-id"] == "9999999":
+        print(jsn)
         sceneListLong = jsn["scenes"]
         for item in jsn["scenes"]:
             sceneListShort.append(item["name"])
@@ -410,7 +412,6 @@ def mainLoop():
             print("Exiting")
             sys.exit()
             break
-
 
 if __name__ == "__main__":
     print("MIDItoOBS made by lebaston100.de ")

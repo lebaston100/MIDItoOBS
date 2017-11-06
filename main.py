@@ -17,6 +17,7 @@ def midicallback(message):
         if result:
             string = result[0]["action"]
             obs_ws.send(string)
+        print(message)
     elif message.type == "control_change":
         Search = Query()
         result = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.control))
@@ -46,6 +47,7 @@ def midicallback(message):
                     actioncounter += 1
                     actionbuffer.append([str(actioncounter), result[0], scalemap(message.value, 0, 127, result[0]["scale_low"], result[0]["scale_high"])])
                     obs_ws.send('{"request-type": "GetSceneList", "message-id": "%s"}' % actioncounter)
+        print(message)
 
 def exitScript():
     port.close()
@@ -53,8 +55,6 @@ def exitScript():
 def obs_on_message(ws, message):
     global actioncounter
     jsn = json.loads(message)
-    #print()
-    #print(jsn)
     if "error" in jsn:
         print("Error: %s" % jsn["error"])
     else:
@@ -93,7 +93,7 @@ def obs_on_error(ws, error):
     print("Websocket Error: %" % str(error))
 
 def obs_on_close(ws):
-    print("OBS disconnected or timed out")
+    print("OBS disconnected/timed out/is not running. Please restart script with OBS open.")
 
 def obs_on_open(ws):
     print("OBS connected")
@@ -106,15 +106,23 @@ def scalemap(inp, ista, isto, osta, osto):
 
 if __name__ == "__main__":
     print("MIDItoOBS made by lebaston100.de")
+    print("!!MAKE SURE OBS IS RUNNING OR THIS SCRIPT WILL CRASH!!")
     print("Main program started.")
     Search = Query()
     result = db.search(Search.type.exists())
     if result:
-        port = mido.open_input(result[0]["value"], callback=midicallback)
+        try:
+            port = mido.open_input(result[0]["value"], callback=midicallback)
+        except:
+            print("The midi device you setup is not connected or now under a different name.")
+            print("Please plugin in the device or run setup.py again and restart this script.")
+            time.sleep(8)
+            sys.exit()
         obs_ws = websocket.WebSocketApp("ws://localhost:4444", on_message = obs_on_message, on_error = obs_on_error, on_close = obs_on_close)
         obs_ws.on_open = obs_on_open
         atexit.register(exitScript)
         threading.Thread(target=obs_start).start()
     else:
         print("Please run setup.py")
+        time.sleep(5)
         sys.exit()
