@@ -20,7 +20,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "StopRecording": """{"request-type": "StopStreaming", "message-id" : "1"}""",
                "SetSourceRender": """{"request-type": "SetSourceRender", "message-id" : "1", "source": "%s", "render": %s}""",               
                "ToggleMute": """{"request-type": "ToggleMute", "message-id" : "1", "source": "%s"}""",
-               "SetMute": """{"request-type": "SetMute", "message-id" : "1", "source": "%s", "mute": "%s"}""",
+               "SetMute": """{"request-type": "SetMute", "message-id" : "1", "source": "%s", "mute": %s}""",
                "StartStopReplayBuffer": """{"request-type": "StartStopReplayBuffer", "message-id" : "1"}""",
                "StartReplayBuffer": """{"request-type": "StartReplayBuffer", "message-id" : "1"}""",
                "StopReplayBuffer": """{"request-type": "StopReplayBuffer", "message-id" : "1"}""",
@@ -254,9 +254,9 @@ def setupButtonEvents(action, NoC, msgType):
         renderArray = ["0 (Invisible)", "1 (Visible)"]
         render = printArraySelect(renderArray)
         if render == "0 (Invisible)":
-            render = 0
+            render = "false"
         else:
-            render = 1
+            render = "true"
         sceneListShort.append("--Current--")
         scene = printArraySelect(sceneListShort)
         if scene != "--Current--":
@@ -290,9 +290,9 @@ def setupButtonEvents(action, NoC, msgType):
         tempArray = ["0 (Muted)", "1 (Unmuted)"]
         muted = printArraySelect(tempArray)
         if muted == "0 (Muted)":
-            muted = 0
+            muted = "false"
         else:
-            muted = 1
+            muted = "true"
         action = jsonArchive["SetMute"] % (source, muted)
         saveButtonToFile(msgType, NoC, "button" , action)
     elif action == "SetTransitionDuration":
