@@ -57,7 +57,7 @@ This script lets you use a MIDI controller like the Novation Launchpad, Ableton 
   - StartReplayBuffer: Starts the replay buffer
   - StopReplayBuffer: Stops the replay buffer
   - SaveReplayBuffer: Save the replay buffer
-  - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms) to a predifined value
+  - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms) to a predefined value
   - SetCurrentProfile: Changes to the selected obs profile
   - SetCurrentSceneCollection: Changes to the selected obs scene collection
   - ResetSceneItem: Resets a scene item
@@ -79,7 +79,7 @@ For a detailed description see the [obs-websocket protocol documentation](https:
 
 A midi value can be something between 0-127. That is a very limited number.
 
-You will only be asked for Input Scale setup if it's required for the function(SetSceneItemPosition, SetSyncOffset, SetTransitionDuration).
+You will only be asked for Input Scale setup if it's required for the function(SetSourcePosition, SetSourceRotation, SetSourceScale, SetSyncOffset, SetTransitionDuration).
 
 The first value you have to enter(lower output value) is the value that will be sent when the fader is sending a 0. The second value you have to enter(higher output value) is the value that will be sent when the fader is sending a 127. The range between the 2 numbers will be interpolated.
 
