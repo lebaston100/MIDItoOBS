@@ -1,11 +1,13 @@
 import mido, websocket, threading, sys, json, atexit, ast
 from tinydb import TinyDB, Query
 
+####Change IP and Port here
+serverIP = "localhost"
+serverPort = "4444"
+####
+
 db = TinyDB("config.json", cache_size=0)
-
-jsonArchive = {"SetSceneItemPosition": """{"request-type" : "SetSceneItemPosition", "message-id" : "1", "item": "%s", "scene-name": "%s", "x": %s, "y": %s}""",
-               "SetSceneItemTransform": """{"request-type" : "SetSceneItemTransform", "message-id" : "1", "item": "%s", "scene-name": "%s", "x-scale": %s, "y-scale": %s, "rotation": %s}"""}
-
+jsonArchive = {"ToggleSourceVisibility": """{"request-type": "GetSceneItemProperties", "message-id" : "%s", "item": "%s"}"""}
 actionbuffer = []
 actioncounter = 2
 
@@ -15,38 +17,56 @@ def midicallback(message):
         Search = Query()
         result = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.note))
         if result:
-            string = result[0]["action"]
-            obs_ws.send(string)
+            for res in result:
+                if "request" in res:
+                    if res["request"] == "ToggleSourceVisibility":
+                        obsrequest = jsonArchive["ToggleSourceVisibility"] % (str(actioncounter), res["target"])
+                        actionbuffer.append([str(actioncounter), res["action"], res["request"]])
+                        obs_ws.send(obsrequest)
+                else:
+                    string = res["action"]
+                    obs_ws.send(string)
         print(message)
     elif message.type == "control_change":
         Search = Query()
-        result = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.control))
-        if result:
-            if  result[0]["input_type"] == "button":
-                if message.value == 127:
-                    string = result[0]["action"]
-                    obs_ws.send(string)
-            elif  result[0]["input_type"] == "fader":
-                if result[0]["cmd"] == "SetSceneItemPosition":
-                    actioncounter += 1
-                    actionbuffer.append([str(actioncounter), result[0], scalemap(message.value, 0, 127, result[0]["scale_low"], result[0]["scale_high"])])
-                    obs_ws.send('{"request-type": "GetSceneList", "message-id": "%s"}' % actioncounter)
-                elif result[0]["cmd"] == "SetVolume":
-                    scaled = scalemap(message.value, 0, 127, result[0]["scale_low"], result[0]["scale_high"])
-                    string = result[0]["action"] % (scaled)
-                    obs_ws.send(string)
-                elif result[0]["cmd"] == "SetTransitionDuration":
-                    scaled = scalemap(message.value, 0, 127, result[0]["scale_low"], result[0]["scale_high"])
-                    string = result[0]["action"] % (int(scaled))
-                    obs_ws.send(string)
-                elif result[0]["cmd"] == "SetSyncOffset":
-                    scaled = scalemap(message.value, 0, 127, result[0]["scale_low"], result[0]["scale_high"])
-                    string = result[0]["action"] % (int(scaled))
-                    obs_ws.send(string)
-                elif result[0]["cmd"] == "SetSceneItemTransform": #can not be implemented because of a limit in the websocket plugin
-                    actioncounter += 1
-                    actionbuffer.append([str(actioncounter), result[0], scalemap(message.value, 0, 127, result[0]["scale_low"], result[0]["scale_high"])])
-                    obs_ws.send('{"request-type": "GetSceneList", "message-id": "%s"}' % actioncounter)
+        results = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.control))
+        if results:
+            for result in results:
+                if  result["input_type"] == "button":
+                    if message.value == 127:
+                        if "request" in result:
+                            if result["request"] == "ToggleSourceVisibility":
+                                obsrequest = jsonArchive["ToggleSourceVisibility"] % (str(actioncounter), result["target"])
+                                actionbuffer.append([str(actioncounter), result["action"], result["request"]])
+                                obs_ws.send(obsrequest)
+                        else:
+                            string = result["action"]
+                            obs_ws.send(string)
+                elif  result["input_type"] == "fader":
+                    if result["cmd"] == "SetSourcePosition":
+                        scaled = scalemap(message.value, 0, 127, result["scale_low"], result["scale_high"])
+                        string = result["action"] % (scaled)
+                        obs_ws.send(string)
+                    elif result["cmd"] == "SetSourceRotation":
+                        scaled = scalemap(message.value, 0, 127, result["scale_low"], result["scale_high"])
+                        string = result["action"] % (int(scaled))
+                        obs_ws.send(string)
+                    elif result["cmd"] == "SetVolume":
+                        scaled = scalemap(message.value, 0, 127, result["scale_low"], result["scale_high"])
+                        string = result["action"] % (scaled)
+                        obs_ws.send(string)
+                    elif result["cmd"] == "SetTransitionDuration":
+                        scaled = scalemap(message.value, 0, 127, result["scale_low"], result["scale_high"])
+                        string = result["action"] % (int(scaled))
+                        obs_ws.send(string)
+                    elif result["cmd"] == "SetSyncOffset":
+                        scaled = scalemap(message.value, 0, 127, result["scale_low"], result["scale_high"])
+                        string = result["action"] % (int(scaled))
+                        obs_ws.send(string)
+                    elif result["cmd"] == "SetSourceScale":
+                        scaled = scalemap(message.value, 0, 127, result["scale_low"], result["scale_high"])
+                        string = result["action"] % (scaled)
+                        obs_ws.send(string)
         print(message)
 
 def exitScript():
@@ -60,34 +80,14 @@ def obs_on_message(ws, message):
     else:
         for line in actionbuffer:
             if jsn["message-id"] == line[0]:
-                if line[1]["cmd"] == "SetSceneItemPosition":
-                    if line[1]["target"] == "X":
-                        y = getPosfromJson(jsn["scenes"], line[1]["scene"], line[1]["source"], "y")
-                        action = jsonArchive["SetSceneItemPosition"] % (line[1]["source"], line[1]["scene"], line[2], y)
-                        obs_ws.send(action)
-                    elif line[1]["target"] == "Y":
-                        x = getPosfromJson(jsn["scenes"], line[1]["scene"], line[1]["source"], "x")
-                        action = jsonArchive["SetSceneItemPosition"] % (line[1]["source"], line[1]["scene"], x, line[2])
-                        obs_ws.send(action)
-                #elif line[1]["cmd"] == "SetSceneItemPosition": can not be implemented because of a limit in the websocket plugin
-                    #if line[1]["target"] == "X-scale":
-                        #yscale = getPosfromJson(jsn["scenes"], line[1]["scene"], line[1]["source"], "y")
-                        #rotation = getPosfromJson(jsn["scenes"], line[1]["scene"], line[1]["source"], "y")
-                    #elif line[1]["target"] == "Y-scale":
-                    #elif line[1]["target"] == "X+Y-scale":
-                    #elif line[1]["target"] == "rotation":
+                if line[2] == "ToggleSourceVisibility":
+                    if jsn["visible"] == False:
+                        render = "true"
+                    else:
+                        render = "false"
+                    obs_ws.send(line[1] % render)
                 actionbuffer.remove([line[0], line[1], line[2]])
                 break
-
-def getPosfromJson(jsn, scene, source, what):
-    for line in jsn:
-        if line["name"] == scene:
-            for line2 in line["sources"]:
-                if line2["name"] == source:
-                    return line2[what]
-                    break
-            break
-
             
 def obs_on_error(ws, error):
     print("Websocket Error: %" % str(error))
@@ -118,7 +118,7 @@ if __name__ == "__main__":
             print("Please plugin in the device or run setup.py again and restart this script.")
             time.sleep(8)
             sys.exit()
-        obs_ws = websocket.WebSocketApp("ws://localhost:4444", on_message = obs_on_message, on_error = obs_on_error, on_close = obs_on_close)
+        obs_ws = websocket.WebSocketApp("ws://" + serverIP + ":" + serverPort, on_message = obs_on_message, on_error = obs_on_error, on_close = obs_on_close)
         obs_ws.on_open = obs_on_open
         atexit.register(exitScript)
         threading.Thread(target=obs_start).start()

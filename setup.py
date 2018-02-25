@@ -1,13 +1,18 @@
-import mido, threading, sys, atexit, json
+import mido, threading, sys, atexit, json, time
 from tinydb import TinyDB, Query
 from websocket import create_connection
 
-import time
+####Change IP and Port here
+serverIP = "localhost"
+serverPort = "4444"
+####
 
 db = TinyDB("config.json")
-buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "SetCurrentTransition", "SetSourceRender", "ToggleMute", "SetMute", "StartStopStreaming", "StartStreaming",
-                 "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer", "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "SetTransitionDuration"]
-faderActions = ["SetVolume", "SetSceneItemPosition", "SetSyncOffset", "SetTransitionDuration"]
+buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "SetCurrentTransition", "SetSourceVisibility", "ToggleSourceVisibility", "ToggleMute", "SetMute",
+                 "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
+                 "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
+                 "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL"]
+faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
                "TransitionToProgram": """{"request-type": "TransitionToProgram", "message-id" : "1"%s}""",
@@ -17,8 +22,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "StopStreaming": """{"request-type": "StopStreaming", "message-id" : "1"}""",
                "StartStopRecording": """{"request-type": "StartStopRecording", "message-id" : "1"}""",
                "StartRecording": """{"request-type": "StartStreaming", "message-id" : "1"}""",
-               "StopRecording": """{"request-type": "StopStreaming", "message-id" : "1"}""",
-               "SetSourceRender": """{"request-type": "SetSourceRender", "message-id" : "1", "source": "%s", "render": %s}""",               
+               "StopRecording": """{"request-type": "StopStreaming", "message-id" : "1"}""",              
                "ToggleMute": """{"request-type": "ToggleMute", "message-id" : "1", "source": "%s"}""",
                "SetMute": """{"request-type": "SetMute", "message-id" : "1", "source": "%s", "mute": %s}""",
                "StartStopReplayBuffer": """{"request-type": "StartStopReplayBuffer", "message-id" : "1"}""",
@@ -28,12 +32,24 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "SetTransitionDuration": """{"request-type": "SetTransitionDuration", "message-id" : "1", "duration": %s}""",
                "SetVolume": """{"request-type": "SetVolume", "message-id" : "1", "source": "%s", "volume": %s}""",
                "SetSyncOffset": """{"request-type": "SetSyncOffset", "message-id" : "1", "source": "%s", "offset": %s}""",
-               "SetSceneItemPosition": """{"request-type": "SetSceneItemPosition", "message-id" : "1", "item": "%s", "scene-name": "%s"%s}"""}
+               "SetCurrentProfile": """{"request-type": "SetCurrentProfile", "message-id" : "1", "profile-name": "%s"}""",
+               "SetCurrentSceneCollection": """{"request-type": "SetCurrentSceneCollection", "message-id" : "1", "sc-name": "%s"}""",
+               "ResetSceneItem": """{"request-type": "ResetSceneItem", "message-id" : "1", "item": %s}""",
+               "SetTextGDIPlusText": """{"request-type": "SetTextGDIPlusProperties", "message-id" : "1", "source": "%s", "text": "%s"}""",
+               "SetBrowserSourceURL": """{"request-type": "SetBrowserSourceProperties", "message-id" : "1", "source": "%s", "url": "%s"}""",
+               "SetSourcePosition": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene": "%s", "item": "%s", "position": {"%s": %s}}""",
+               "SetSourceRotation": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene": "%s", "item": "%s", "rotation": %s}""",
+               "SetSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
+               "ToggleSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
+               "SetSourceScale": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene": "%s", "item": "%s", "scale": {"%s": %s}}"""}
 
 sceneListShort = []
 sceneListLong = []
 transitionList = []
 specialSourcesList = []
+profilesList = []
+sceneCollectionList = []
+gdisourcesList = []
 
 ignore = 255
 savetime1 = time.time()
@@ -90,7 +106,7 @@ def midicallback(message):
         except ValueError:
             print("Please try again and enter a valid number")
 
-#I know this is kinda messy, but i challange you to make a better version(as a plugin or pull request to obs-studio)
+#I know this is kinda messy, but i challange you to make a better version(as a native plugin or pull request to obs-studio)
 def setupFaderEvents(action, NoC, msgType):
     print()
     print("You selected: %s" % action)
@@ -107,7 +123,7 @@ def setupFaderEvents(action, NoC, msgType):
         source = printArraySelect(tempSceneList)
         scale = (0,1)
         action = jsonArchive["SetVolume"] % (source, "%s")
-        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetVolume", "")
+        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetVolume")
     elif action == "SetSyncOffset":
         updateSceneList()
         updateSpecialSources()
@@ -121,8 +137,8 @@ def setupFaderEvents(action, NoC, msgType):
         source = printArraySelect(tempSceneList)
         scale = askForInputScaling()
         action = jsonArchive["SetSyncOffset"] % (source, "%s")
-        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSyncOffset", source)
-    elif action == "SetSceneItemPosition":
+        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSyncOffset")
+    elif action == "SetSourcePosition":
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
@@ -134,28 +150,32 @@ def setupFaderEvents(action, NoC, msgType):
             print("%s: Source '%s' in scene '%s'" % (counter, line["source"], line["scene"]))
             counter += 1
         selected = tempSceneList[int(input("Select 0-%s: " % str(len(tempSceneList)-1)))]
-        tempTargetList = ["X", "Y"]
+        tempTargetList = ["x", "y"]
         target = int(input("\n0: X\n1: Y\nSelect Target to change (0-1): "))
         if target in range(0, 2):
-            action = ""
             scale = askForInputScaling()
-            Search = Query()
-            result = db.search((Search.msg_type == msgType) & (Search.msgNoC == NoC))
-            if result:
-                db.remove((Search.msg_type == msgType) & (Search.msgNoC == NoC))
-                db.insert({"msg_type": msgType, "msgNoC": NoC, "input_type": "fader", "scale_low": scale[0],
-                           "scale_high": scale[1], "action": action, "cmd": "SetSceneItemPosition",
-                           "target": tempTargetList[target], "scene": selected["scene"], "source": selected["source"]})
-            else:
-                db.insert({"msg_type": msgType, "msgNoC": NoC, "input_type": "fader", "scale_low": scale[0],
-                           "scale_high": scale[1], "action": action, "cmd": "SetSceneItemPosition",
-                           "target": tempTargetList[target], "scene": selected["scene"], "source": selected["source"]})
-            print("Saved %s with control %s for action %s" % (msgType, NoC, "SetSceneItemPosition"))
+            action = jsonArchive["SetSourcePosition"] % (selected["scene"], selected["source"], tempTargetList[target], "%s")
+            saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourcePosition")
+    elif action == "SetSourceRotation":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                tmpOBJ = {"scene": scene["name"], "source": line["name"]}
+                tempSceneList.append(tmpOBJ)
+        counter = 0
+        for line in tempSceneList:
+            print("%s: Source '%s' in scene '%s'" % (counter, line["source"], line["scene"]))
+            counter += 1
+        selected = tempSceneList[int(input("Select 0-%s: " % str(len(tempSceneList)-1)))]
+        scale = askForInputScaling()
+        action = jsonArchive["SetSourceRotation"] % (selected["scene"], selected["source"], "%s")
+        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourceRotation")
     elif action == "SetTransitionDuration":
         scale = askForInputScaling()
         action = jsonArchive["SetTransitionDuration"]
-        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetTransitionDuration", "")
-    elif action == "SetSceneItemTransform": #can not be implemented because of a limit in the websocket plugin
+        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetTransitionDuration")
+    elif action == "SetSourceScale":
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
@@ -167,22 +187,12 @@ def setupFaderEvents(action, NoC, msgType):
             print("%s: Source '%s' in scene '%s'" % (counter, line["source"], line["scene"]))
             counter += 1
         selected = tempSceneList[int(input("Select 0-%s: " % str(len(tempSceneList)-1)))]
-        tempTargetList = ["X-scale", "Y-scale", "X+Y-scale", "rotation"]
-        target = int(input("\n0: X-scale\n1: Y-scale\n2: X+Y-scale\n3: rotation\nSelect Target to change (0-3): "))
-        if target in range(0, 4):
-            action = ""
+        tempTargetList = ["x", "y"]
+        target = int(input("\n0: X\n1: Y\nSelect Target to change (0-1): "))
+        if target in range(0, 2):
             scale = askForInputScaling()
-            Search = Query()
-            result = db.search((Search.msg_type == msgType) & (Search.msgNoC == NoC))
-            if result:
-                db.remove((Search.msg_type == msgType) & (Search.msgNoC == NoC))
-                db.insert({"msg_type": msgType, "msgNoC": NoC, "input_type": "fader", "scale_low": scale[0],
-                           "scale_high": scale[1], "action": action, "cmd": "SetSceneItemTransform",
-                           "target": tempTargetList[target], "scene": selected["scene"], "source": selected["source"]})
-            else:
-                db.insert({"msg_type": msgType, "msgNoC": NoC, "input_type": "fader", "scale_low": scale[0],
-                           "scale_high": scale[1], "action": action, "cmd": "SetSceneItemTransform",
-                           "target": tempTargetList[target], "scene": selected["scene"], "source": selected["source"]})
+            action = jsonArchive["SetSourceScale"] % (selected["scene"], selected["source"], tempTargetList[target], "%s")
+            saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourceScale")
         
 def setupButtonEvents(action, NoC, msgType):
     print()
@@ -243,7 +253,7 @@ def setupButtonEvents(action, NoC, msgType):
     elif action == "SaveReplayBuffer": #fertig
         action = jsonArchive["SaveReplayBuffer"]
         saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetSourceRender": #fertig
+    elif action == "SetSourceVisibility": #fertig
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
@@ -260,9 +270,23 @@ def setupButtonEvents(action, NoC, msgType):
         sceneListShort.append("--Current--")
         scene = printArraySelect(sceneListShort)
         if scene != "--Current--":
-            render = str(render) + ', "scene-name": "' + scene + '"'
-        action = jsonArchive["SetSourceRender"] % (source, render)
+            source = source + '", "scene": "' + scene
+        action = jsonArchive["SetSourceVisibility"] % (source, str(render))
         saveButtonToFile(msgType, NoC, "button" , action)
+    elif action == "ToggleSourceVisibility": #fertig
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        sceneListShort.append("--Current--")
+        scene = printArraySelect(sceneListShort)
+        if scene != "--Current--":
+            source = source + '", "scene": "' + scene
+        action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
+        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", source)
     elif action == "ToggleMute": #fertig
         updateSceneList()
         updateSpecialSources()
@@ -295,24 +319,76 @@ def setupButtonEvents(action, NoC, msgType):
             muted = "true"
         action = jsonArchive["SetMute"] % (source, muted)
         saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetTransitionDuration":
+    elif action == "SetTransitionDuration": #fertig
         time = int(input("Input the desired time(in milliseconds): "))
         action = jsonArchive["SetTransitionDuration"] % time
         saveButtonToFile(msgType, NoC, "button" , action)
+    elif action == "SetCurrentProfile": #fertig
+        updateProfileList()
+        profilename = printArraySelect(profilesList)
+        action = jsonArchive["SetCurrentProfile"] % profilename
+        saveButtonToFile(msgType, NoC, "button" , action)
+    elif action == "SetRecordingFolder": #fertig
+        recpath = str(input("Input the desired path: "))
+        action = jsonArchive["SetRecordingFolder"] % recpath
+        saveButtonToFile(msgType, NoC, "button" , action)
+    elif action == "SetCurrentSceneCollection": #fertig
+        updatesceneCollectionList()
+        scenecollection = printArraySelect(sceneCollectionList)
+        print(scenecollection)
+        action = jsonArchive["SetCurrentSceneCollection"] % scenecollection
+        saveButtonToFile(msgType, NoC, "button" , action)
+    elif action == "ResetSceneItem": #fertig
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        sceneListShort.append("--Current--")
+        scene = printArraySelect(sceneListShort)
+        if scene != "--Current--":
+            render = '"' + str(source) + '", "scene-name": "' + scene + '"'
+        else:
+            render = '"' + str(source) + '"'
+        action = jsonArchive["ResetSceneItem"] % (render)
+        saveButtonToFile(msgType, NoC, "button" , action)
+    elif action == "SetTextGDIPlusText":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList and line["type"] == "text_gdiplus":
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        text = str(input("Input the desired text: "))
+        action = jsonArchive["SetTextGDIPlusText"] % (source, text)
+        saveButtonToFile(msgType, NoC, "button" , action)
+    elif action == "SetBrowserSourceURL":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList and line["type"] == "browser_source":
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        url = str(input("Input the desired URL: "))
+        action = jsonArchive["SetBrowserSourceURL"] % (source, url)
+        saveButtonToFile(msgType, NoC, "button" , action)
 
-def saveFaderToFile(msg_type, msgNoC, input_type, action, scale, cmd, target):
-    #print("saved", msg_type, msgNoC, input_type, action, scale, cmd, target)
+        
+def saveFaderToFile(msg_type, msgNoC, input_type, action, scale, cmd):
     print("Saved %s with control %s for action %s" % (msg_type, msgNoC, cmd))
     Search = Query()
     result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC))
     if result:
         db.remove(Search.msgNoC == msgNoC)
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd, "target": target})
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd})
     else:
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd, "target": target})
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd})
 
 def saveButtonToFile(msg_type, msgNoC, input_type, action):
-    #print("saved", msg_type, msgNoC, input_type, action)
     print("Saved %s with note/control %s for action %s" % (msg_type, msgNoC, action))
     Search = Query()
     result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC))
@@ -321,6 +397,16 @@ def saveButtonToFile(msg_type, msgNoC, input_type, action):
         db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action})
     else:
         db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action})
+
+def saveTODOButtonToFile(msg_type, msgNoC, input_type, action, request, target):
+    print("Saved %s with note/control %s for action %s" % (msg_type, msgNoC, action))
+    Search = Query()
+    result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC))
+    if result:
+        db.remove(Search.msgNoC == msgNoC)
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target})
+    else:
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target})
 
 def printArraySelect(array):
     counter = 0
@@ -337,7 +423,7 @@ def askForInputScaling():
 
 def updateTransitionList():
     global transitionList
-    ws = create_connection("ws://localhost:4444")
+    ws = create_connection("ws://" + serverIP + ":" + serverPort)
     print("Updating transition list, plase wait")
     ws.send("""{"request-type": "GetTransitionList", "message-id": "999999"}""")
     result =  ws.recv()
@@ -354,7 +440,7 @@ def updateTransitionList():
 def updateSceneList():
     global sceneListShort
     global sceneListLong
-    ws = create_connection("ws://localhost:4444")
+    ws = create_connection("ws://" + serverIP + ":" + serverPort)
     print("Updating scene list, plase wait")
     ws.send("""{"request-type": "GetSceneList", "message-id": "9999999"}""")
     result =  ws.recv()
@@ -372,7 +458,7 @@ def updateSceneList():
 
 def updateSpecialSources():
     global specialSourcesList
-    ws = create_connection("ws://localhost:4444")
+    ws = create_connection("ws://" + serverIP + ":" + serverPort)
     print("Updating special sources, plase wait")
     ws.send("""{"request-type": "GetSpecialSources", "message-id": "99999999"}""")
     result =  ws.recv()
@@ -389,6 +475,38 @@ def updateSpecialSources():
         print("Failed to update")
     ws.close()
 
+def updateProfileList():
+    global profilesList
+    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    print("Updating Profiles List, plase wait")
+    ws.send("""{"request-type": "ListProfiles", "message-id": "99999999"}""")
+    result =  ws.recv()
+    jsn = json.loads(result)
+    profilesList = []
+    if jsn["message-id"] == "99999999":
+        for line in jsn["profiles"]:
+            profilesList.append(line["profile-name"])
+        print("Profiles List updatet")
+    else:
+        print("Failed to update")
+    ws.close()
+
+def updatesceneCollectionList():
+    global sceneCollectionList
+    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    print("Updating Scene Collection List, plase wait")
+    ws.send("""{"request-type": "ListSceneCollections", "message-id": "99999999"}""")
+    result =  ws.recv()
+    jsn = json.loads(result)
+    sceneCollectionList = []
+    if jsn["message-id"] == "99999999":
+        for line in jsn["scene-collections"]:
+            sceneCollectionList.append(line["sc-name"])
+        print("Scene Collection List updatet")
+    else:
+        print("Failed to update")
+    ws.close()
+        
 def mainLoop():
     global ignore
     global savetime1
@@ -431,7 +549,13 @@ if __name__ == "__main__":
                 db.insert({"type" : "device", "value": deviceList[input_select]})
         else:
                 db.insert({"type" : "device", "value": deviceList[input_select]})
-        midiport = mido.open_input(deviceList[input_select])
+        try:
+            midiport = mido.open_input(deviceList[input_select])
+        except:
+            print("The midi device might be used by another application.")
+            print("Please close the device in the other application and restart this script.")
+            time.sleep(8)
+            sys.exit()
         atexit.register(exitScript)
         print("Please press key or move fader/knob on midi controller")
         mainLoop()
