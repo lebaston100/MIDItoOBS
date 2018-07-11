@@ -84,6 +84,7 @@ You will only be asked for Input Scale setup if it's required for the function(S
 The first value you have to enter(lower output value) is the value that will be sent when the fader is sending a 0. The second value you have to enter(higher output value) is the value that will be sent when the fader is sending a 127. The range between the 2 numbers will be interpolated.
 
 ## Sidenotes:
+
 - You can change the IP and Port by modifying the main.py(line 5/6) and setup.py(line 6/7) with a text editor. 
 
 ## Setting up "macros" (optional):
@@ -108,6 +109,11 @@ You can assign unlimited different actions to the same button. This requires edi
 - Third, it prints out a message every time you press a button that is setup
 - Now just leave it running in the background
 - To stop the program simply close the window (on linux kill the task or CTRL + C)
+
+## Troubleshooting
+
+A user has reported that under certain circumstances the script(setup and main) will crash after start on Windows with "ImportError: DLL load failed: The specified module could not be found".
+If this happens to you, plase install the Visual C++ Redistributable from Microsoft. Make sure you get the x86 version if you are using python 32bit(Which is default) ([Download](https://aka.ms/vs/15/release/vc_redist.x86.exe))
 
 ### Tested on/with:
 - Win 7 Build 7601
