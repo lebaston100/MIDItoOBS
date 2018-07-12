@@ -1,3 +1,4 @@
+from __future__ import division
 import mido, websocket, threading, sys, json, atexit, ast
 from tinydb import TinyDB, Query
 
