@@ -117,9 +117,9 @@ If this happens to you, plase install the Visual C++ Redistributable from Micros
 
 ### Tested on/with:
 - Win 7 Build 7601
-- Win 10 Build 14393
-- Python 3.6.4:d48eceb
-- obs-studio 21.0.1
-- obs-websocket 4.3.1
+- Win 10 Build 14393/Build 17134
+- Python 3.6.4:d48eceb/3.6.5:f59c0932b4
+- obs-studio 21.0.1/22.0.1
+- obs-websocket 4.3.1/4.4.0
 - KORG nanoPAD
 - Hercules DJ Control MP3

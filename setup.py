@@ -55,9 +55,9 @@ ignore = 255
 savetime1 = time.time()
 
 def exitScript():
+    print("Exiting...")
     midiport.close()
-    print("Exiting")
-    sys.exit()
+    db.close()
 
 def midicallback(message):
     global ignore
@@ -542,10 +542,9 @@ if __name__ == "__main__":
     input_select = int(input("Select 0-%s: " % str(len(deviceList)-1)))
     if input_select in range(0, len(deviceList)):
         print("You selected: %s (%s)" % (str(input_select), deviceList[input_select]))
-        Search = Query()
-        result = db.search(Search.value == deviceList[input_select])
+        result = db.search(Query().value == deviceList[input_select])
         if result:
-                db.remove(Search.type == "device")
+                db.remove(Query().type == "device")
                 db.insert({"type" : "device", "value": deviceList[input_select]})
         else:
                 db.insert({"type" : "device", "value": deviceList[input_select]})

@@ -1,5 +1,5 @@
 from __future__ import division
-import mido, websocket, threading, sys, json, atexit, ast
+import mido, websocket, threading, sys, json, atexit, ast, time
 from tinydb import TinyDB, Query
 
 ####Change IP and Port here
@@ -15,8 +15,7 @@ actioncounter = 2
 def midicallback(message):
     global actioncounter
     if message.type == "note_on":
-        Search = Query()
-        result = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.note))
+        result = db.search((Query().msg_type == message.type) & (Query().msgNoC == message.note))
         if result:
             for res in result:
                 if "request" in res:
@@ -29,8 +28,7 @@ def midicallback(message):
                     obs_ws.send(string)
         print(message)
     elif message.type == "control_change":
-        Search = Query()
-        results = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.control))
+        results = db.search((Query().msg_type == message.type) & (Query().msgNoC == message.control))
         if results:
             for result in results:
                 if  result["input_type"] == "button":
@@ -71,6 +69,8 @@ def midicallback(message):
         print(message)
 
 def exitScript():
+    print("Exiting...")
+    db.close()
     port.close()
 
 def obs_on_message(ws, message):
@@ -106,11 +106,10 @@ def scalemap(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
 
 if __name__ == "__main__":
-    print("MIDItoOBS made by lebaston100.de")
+    print("MIDItoOBS made by github.com/lebaston100")
     print("!!MAKE SURE OBS IS RUNNING OR THIS SCRIPT WILL CRASH!!")
-    print("Main program started.")
-    Search = Query()
-    result = db.search(Search.type.exists())
+    print("Main program started")
+    result = db.search(Query().type.exists())
     if result:
         try:
             port = mido.open_input(result[0]["value"], callback=midicallback)
