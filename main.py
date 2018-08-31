@@ -27,6 +27,20 @@ def midicallback(message):
                     string = res["action"]
                     obs_ws.send(string)
         print(message)
+    elif message.type == "program_change": #program_change messages can be used as buttons. they have no extra value so no fader control
+    	Search = Query()
+    	result = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.program))
+    	if result:
+            for res in result:
+                if "request" in res:
+                    if res["request"] == "ToggleSourceVisibility":
+                        obsrequest = jsonArchive["ToggleSourceVisibility"] % (str(actioncounter), res["target"])
+                        actionbuffer.append([str(actioncounter), res["action"], res["request"]])
+                        obs_ws.send(obsrequest)
+                else:
+                    string = res["action"]
+                    obs_ws.send(string)
+        print(message)
     elif message.type == "control_change":
         results = db.search((Query().msg_type == message.type) & (Query().msgNoC == message.control))
         if results:
