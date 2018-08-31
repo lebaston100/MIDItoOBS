@@ -75,6 +75,17 @@ def midicallback(message):
         if input_select in range(0, len(buttonActions)):
             action = buttonActions[input_select]
             setupButtonEvents(action, message.note, message.type)
+    elif message.type == "program_change": #button only
+        ignore = message.program
+        print("Select Action:")
+        counter = 0
+        for action in buttonActions:
+            print("%s: %s" % (counter, action))
+            counter += 1
+        input_select = int(input("Select 0-%s: " % str(len(buttonActions)-1)))
+        if input_select in range(0, len(buttonActions)):
+            action = buttonActions[input_select]
+            setupButtonEvents(action, message.program, message.type)
     elif message.type == "control_change": #button or fader
         ignore = message.control
         print("Select input type:\n0: Button\n1: Fader/Knob\n2: Ignore")
@@ -516,6 +527,10 @@ def mainLoop():
             if msg:
                 if msg.type == "note_on":
                     if msg.note != ignore:
+                        midicallback(msg)
+                        savetime1 = time.time()
+                if msg.type == "program_change":
+                    if msg.program != ignore:
                         midicallback(msg)
                         savetime1 = time.time()
                 if msg.type == "control_change":
