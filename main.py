@@ -23,6 +23,7 @@ def midicallback(message):
                         obsrequest = jsonArchive["ToggleSourceVisibility"] % (str(actioncounter), res["target"])
                         actionbuffer.append([str(actioncounter), res["action"], res["request"]])
                         obs_ws.send(obsrequest)
+                        actioncounter += 1
                 else:
                     string = res["action"]
                     obs_ws.send(string)
@@ -37,6 +38,7 @@ def midicallback(message):
                         obsrequest = jsonArchive["ToggleSourceVisibility"] % (str(actioncounter), res["target"])
                         actionbuffer.append([str(actioncounter), res["action"], res["request"]])
                         obs_ws.send(obsrequest)
+                        actioncounter += 1
                 else:
                     string = res["action"]
                     obs_ws.send(string)
@@ -52,6 +54,7 @@ def midicallback(message):
                                 obsrequest = jsonArchive["ToggleSourceVisibility"] % (str(actioncounter), result["target"])
                                 actionbuffer.append([str(actioncounter), result["action"], result["request"]])
                                 obs_ws.send(obsrequest)
+                                actioncounter += 1
                         else:
                             string = result["action"]
                             obs_ws.send(string)
