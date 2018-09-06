@@ -8,7 +8,8 @@ serverPort = "4444"
 ####
 
 db = TinyDB("config.json", cache_size=0)
-jsonArchive = {"ToggleSourceVisibility": """{"request-type": "GetSceneItemProperties", "message-id" : "%s", "item": "%s"}"""}
+jsonArchive = {"ToggleSourceVisibility": """{"request-type": "GetSceneItemProperties", "message-id" : "%s", "item": "%s"}""",
+               "GetBrowserSourceURL": """{"request-type": "GetSourceSettings", "message-id" : "%s", "sourceName": "%s"}"""}
 actionbuffer = []
 actioncounter = 2
 
@@ -24,18 +25,28 @@ def midicallback(message):
                         actionbuffer.append([str(actioncounter), res["action"], res["request"]])
                         obs_ws.send(obsrequest)
                         actioncounter += 1
+                    elif res["request"] == "ReloadBrowserSource":
+                        obsrequest = jsonArchive["GetBrowserSourceURL"] % (str(actioncounter), res["target"])
+                        actionbuffer.append([str(actioncounter), res["action"], res["request"]])
+                        obs_ws.send(obsrequest)
+                        actioncounter += 1
                 else:
                     string = res["action"]
                     obs_ws.send(string)
         print(message)
     elif message.type == "program_change": #program_change messages can be used as buttons. they have no extra value so no fader control
-    	Search = Query()
-    	result = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.program))
-    	if result:
+        Search = Query()
+        result = db.search((Search.msg_type == message.type) & (Search.msgNoC == message.program))
+        if result:
             for res in result:
                 if "request" in res:
                     if res["request"] == "ToggleSourceVisibility":
                         obsrequest = jsonArchive["ToggleSourceVisibility"] % (str(actioncounter), res["target"])
+                        actionbuffer.append([str(actioncounter), res["action"], res["request"]])
+                        obs_ws.send(obsrequest)
+                        actioncounter += 1
+                    elif res["request"] == "ReloadBrowserSource":
+                        obsrequest = jsonArchive["GetBrowserSourceURL"] % (str(actioncounter), res["target"])
                         actionbuffer.append([str(actioncounter), res["action"], res["request"]])
                         obs_ws.send(obsrequest)
                         actioncounter += 1
@@ -53,6 +64,11 @@ def midicallback(message):
                             if result["request"] == "ToggleSourceVisibility":
                                 obsrequest = jsonArchive["ToggleSourceVisibility"] % (str(actioncounter), result["target"])
                                 actionbuffer.append([str(actioncounter), result["action"], result["request"]])
+                                obs_ws.send(obsrequest)
+                                actioncounter += 1
+                            elif res["request"] == "ReloadBrowserSource":
+                                obsrequest = jsonArchive["GetBrowserSourceURL"] % (str(actioncounter), res["target"])
+                                actionbuffer.append([str(actioncounter), res["action"], res["request"]])
                                 obs_ws.send(obsrequest)
                                 actioncounter += 1
                         else:
@@ -104,6 +120,13 @@ def obs_on_message(ws, message):
                     else:
                         render = "false"
                     obs_ws.send(line[1] % render)
+                elif line[2] == "ReloadBrowserSource":
+                    url = jsn["sourceSettings"]["url"]
+                    if url[-1] == "#":
+                        url = url[0:-1]
+                    else:
+                        url += "#"
+                    obs_ws.send(line[1] % url)
                 actionbuffer.remove([line[0], line[1], line[2]])
                 break
             

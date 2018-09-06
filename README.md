@@ -1,5 +1,5 @@
 # Midi OBS what???
-This script lets you use a MIDI controller like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to switch scenes, start/stop recording/streaming, control volume/delay/transition time and more in [obs-studio](https://github.com/jp9000/obs-studio).
+This script let's you use a MIDI controller like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to switch scenes, start/stop recording/streaming, control volume/delay/transition time and more in [obs-studio](https://github.com/jp9000/obs-studio).
 
 ## Requirements
 
@@ -10,7 +10,7 @@ This script lets you use a MIDI controller like the Novation Launchpad, Ableton 
   - [mido](https://github.com/olemb/mido)
   - [python-rtmidi](https://pypi.python.org/pypi/python-rtmidi)
   - [websocket-client](https://github.com/websocket-client/websocket-client)
-- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.3.1)
+- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.4.0)
   
 ## Setup Part 1
 
@@ -23,8 +23,8 @@ This script lets you use a MIDI controller like the Novation Launchpad, Ableton 
 
 ## Setup Part 2 OBS Websocket
 
-- Install the plugin [(How to install a plugin in obs-studio)](https://obsproject.com/forum/resources/obs-and-obs-studio-install-plugins-windows.421/)
-- Open the "Tools" menu and select "websocket server settings"
+- Download the installer and run it
+- Start OBS, open the "Tools" menu and select "websocket server settings"
 - Make sure that "Enable Websocket server" is checked, "Server Port" is 4444 and "Enable authentification" is unchecked
 
 ## Setup Part 3
@@ -63,6 +63,7 @@ This script lets you use a MIDI controller like the Novation Launchpad, Ableton 
   - ResetSceneItem: Resets a scene item
   - SetTextGDIPlusText: Sets the text of a GDI text source
   - SetBrowserSourceURL: Sets the url of a BrowserSource
+  - ReloadBrowserSource: Reloads a BrowserSource
   
 - Available for faders
   - SetVolume: Sets the volume of a source
@@ -85,7 +86,7 @@ The first value you have to enter(lower output value) is the value that will be 
 
 ## Sidenotes:
 
-- You can change the IP and Port by modifying the main.py(line 5/6) and setup.py(line 6/7) with a text editor. 
+- You can change the IP and Port by modifying the main.py(line 5/6) and setup.py(line 6/7) with a text editor if the scritp is running on another PC on the network. 
 
 ## Setting up "macros" (optional):
 
@@ -94,7 +95,7 @@ You can assign unlimited different actions to the same button. This requires edi
  - Setup the functions as described above on different buttons
  - Now stop the setup.py and open the config(config.json) with a text editor.
  - Change the "msgNoC" value of the buttons you want to combine to the value of the button you want to use.
- - [Here is a picture for better understanding ](https://imgur.com/a/FqPuG)
+ - Here are some pictures for better understanding: [Step 1](https://cdn.lebaston100.de/git/midiobs/miditoobs_1.png) [Step 2](https://cdn.lebaston100.de/git/midiobs/miditoobs_2.png)
  - Now save and close the config file
  - Start main.py and verify that it works
 
@@ -115,11 +116,13 @@ You can assign unlimited different actions to the same button. This requires edi
 A user has reported that under certain circumstances the script(setup and main) will crash after start on Windows with "ImportError: DLL load failed: The specified module could not be found".
 If this happens to you, plase install the Visual C++ Redistributable from Microsoft. Make sure you get the x86 version if you are using python 32bit(Which is default) ([Download](https://aka.ms/vs/15/release/vc_redist.x86.exe))
 
+If you have any other problem, just open a Github issue or DM me @lebaston100 (Twitter/Instagram)
+
 ### Tested on/with:
 - Win 7 Build 7601
 - Win 10 Build 14393/Build 17134
-- Python 3.6.4:d48eceb/3.6.5:f59c0932b4
-- obs-studio 21.0.1/22.0.1
+- Python 3.6.4:d48eceb/3.6.5:f59c0932b4/v3.7.0:1bf9cc5093
+- obs-studio 21.0.1/22.0.1/22.0.2
 - obs-websocket 4.3.1/4.4.0
 - KORG nanoPAD
 - Hercules DJ Control MP3
