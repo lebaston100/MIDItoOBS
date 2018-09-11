@@ -85,7 +85,7 @@ def midicallback(message):
                         obs_ws.send(string)
                     elif result["cmd"] == "SetVolume":
                         scaled = scalemap(message.value, 0, 127, result["scale_low"], result["scale_high"])
-                        string = result["action"] % (scaled)
+                        string = result["action"] % (scaled)**3
                         obs_ws.send(string)
                     elif result["cmd"] == "SetTransitionDuration":
                         scaled = scalemap(message.value, 0, 127, result["scale_low"], result["scale_high"])
