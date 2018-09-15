@@ -185,8 +185,16 @@ class MidiHandler:
             self._action_buffer.remove(action)
             break
 
-    def handle_obs_error(self, ws, error):
-        self.log.error("Websocket error: %" % str(error))
+    def handle_obs_error(self, ws, error=None):
+        # Protection against potential inconsistencies in `inspect.ismethod`
+        if error is None and isinstance(ws, BaseException):
+            error = ws
+
+        if isinstance(error, (KeyboardInterrupt, SystemExit)):
+            self.log.info("Keyboard interrupt received, gracefully exiting...")
+            self.close(teardown=True)
+        else:
+            self.log.error("Websocket error: %" % str(error))
 
     def handle_obs_close(self, ws):
         self.log.error("OBS has disconnected, timed out or isn't running")
@@ -232,23 +240,28 @@ class MidiHandler:
         self.log.info("Connecting to OBS...")
         self.obs_socket.run_forever()
 
-    def __end__(self):
-        self.log.info("Exiting script...")
-
+    def close(self, teardown=False):
         self.log.debug("Attempting to close midi port")
         self.port.close()
 
         self.log.info("Midi connection has been closed successfully")
 
-        self.log.debug("Attempting to close OBS connection")
-        self.obs_socket.close()
+        # If close is requested during keyboard interrupt, let the websocket
+        # client tear itself down and make a clean exit
+        if not teardown:
+            self.log.debug("Attempting to close OBS connection")
+            self.obs_socket.close()
 
-        self.log.info("OBS connection has been closed successfully")
+            self.log.info("OBS connection has been closed successfully")
 
         self.log.debug("Attempting to close TinyDB instance on config file")
         self.db.close()
 
         self.log.info("Config file has been successfully released")
+
+    def __end__(self):
+        self.log.info("Exiting script...")
+        self.close()
 
 if __name__ == "__main__":
     handler = MidiHandler()
