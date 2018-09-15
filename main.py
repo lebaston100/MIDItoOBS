@@ -203,7 +203,7 @@ class MidiHandler:
     def handle_obs_open(self, ws):
         self.log.info("Successfully connected to OBS")
 
-    def send_action(self, action_request, request, target):
+    def send_action(self, action_request):
         action = result.get("action")
         if not action:
             # @NOTE: this potentionally should never happen but you never know
