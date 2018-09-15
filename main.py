@@ -204,7 +204,7 @@ class MidiHandler:
         self.log.info("Successfully connected to OBS")
 
     def send_action(self, action_request):
-        action = result.get("action")
+        action = action_request.get("action")
         if not action:
             # @NOTE: this potentionally should never happen but you never know
             self.log.error("No action supplied in current request")
