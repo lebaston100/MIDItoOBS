@@ -111,14 +111,8 @@ class MidiHandler:
             return
 
         for result in results:
-            action = result["action"]
-
-            if "request" in result:
-                if not self.send_request(action, result["request"], result["target"]):
-                    continue
-            else:
-                self.obs_socket.send(action)
-            break
+            if self.send_action(result):
+                break
 
     def handle_midi_fader(self, control, value):
         query = Query()
@@ -133,13 +127,8 @@ class MidiHandler:
             action = result["action"]
 
             if input_type == "button":
-                if value == 127:
-                    if "request" in result:
-                        if not self.send_request(action, result["request"], result["target"]):
-                            continue
-                    else:
-                        self.obs_socket.send(action)
-                        break
+                if value == 127 and not self.send_action(result):
+                    continue
                 break
 
             if input_type == "fader":
@@ -151,7 +140,7 @@ class MidiHandler:
                     break
 
                 # Super dirty hack but @AlexDash says that it works
-                # @TODO: write a proper conversion for volume level
+                # @TODO: find an explanation _why_ it works
                 if command == "SetVolume":
                     # Yes, this literally raises a float to a third degree
                     self.obs_socket.send(action % scaled**3)
@@ -206,13 +195,34 @@ class MidiHandler:
     def handle_obs_open(self, ws):
         self.log.info("Successfully connected to OBS")
 
-    def send_request(self, action, request, target):
-        if not request in TEMPLATES:
-            # Returning false to keep searching
+    def send_action(self, action_request, request, target):
+        action = result.get("action")
+        if not action:
+            # @NOTE: this potentionally should never happen but you never know
+            self.log.error("No action supplied in current request")
+            return False
+
+        request = action_request.get("request")
+        if not request:
+            self.log.debug("No request body for action %s, sending action" % action)
+            self.obs_socket.send(action)
+            # Success, breaking the loop
+            return True
+
+        template = TEMPLATES.get(request)
+        if not template:
+            self.log.error("Missing template for request %s" % request)
+            # Keep searching
+            return False
+
+        target = action_request.get("target")
+        if not target:
+            self.log.error("Missing target in %s request for %s action" % (request, action))
+            # Keep searching
             return False
 
         self._action_buffer.append([self._action_counter, action, request])
-        self.obs_socket.send(TEMPLATES[request] % (self._action_counter, target))
+        self.obs_socket.send(template % (self._action_counter, target))
         self._action_counter += 1
 
         # Explicit return is necessary here to avoid extra searching
