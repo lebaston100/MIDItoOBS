@@ -14,7 +14,7 @@ TEMPLATES = {
   "message-id": "%d",
   "item": "%s"
 }""",
-"GetBrowserSourceURL": """{
+"ReloadBrowserSource": """{
   "request-type": "GetSourceSettings",
   "message-id": "%d",
   "sourceName": "%s"
@@ -44,7 +44,7 @@ def get_logger(name, level=logging.INFO):
     return logger
 
 class MidiHandler:
-    # Initializes the handler classß
+    # Initializes the handler class
     def __init__(self, config_path="config.json", ws_server="localhost", ws_port=4444):
         # Setting up logging first and foremost
         self.log = get_logger("midi_to_obs")
@@ -54,7 +54,7 @@ class MidiHandler:
         self._action_counter = 2
 
         self.log.debug("Trying to load config file  from %s" % config_path)
-        self.db = TinyDB(config_path)
+        self.db = TinyDB(config_path, indent=4)
         result = self.db.search(Query().type.exists())
         if not result:
             self.log.critical("Config file %s doesn't exist or is damaged" % config_path)
@@ -79,7 +79,7 @@ class MidiHandler:
         self.log.info("Successfully initialized midi port `%s`" % port_name)
         del port_name
 
-        # Properly setting up a Websocket clientß
+        # Properly setting up a Websocket client
         self.log.debug("Attempting to connect to OBS using websocket protocol")
         self.obs_socket = WebSocketApp("ws://%s:%d" % (ws_server, ws_port))
         self.obs_socket.on_message = self.handle_obs_message
@@ -166,7 +166,7 @@ class MidiHandler:
         for action in self._action_buffer:
             (buffered_id, template, kind) = action
 
-            if buffered_id != payload["message-id"]:
+            if buffered_id != int(payload["message-id"]):
                 continue
 
             del buffered_id

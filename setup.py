@@ -7,7 +7,7 @@ serverIP = "localhost"
 serverPort = "4444"
 ####
 
-db = TinyDB("config.json")
+db = TinyDB("config.json", indent=4)
 buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "SetCurrentTransition", "SetSourceVisibility", "ToggleSourceVisibility", "ToggleMute", "SetMute",
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
@@ -298,7 +298,9 @@ def setupButtonEvents(action, NoC, msgType):
         if scene != "--Current--":
             source = source + '", "scene": "' + scene
         action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", source)
+        print("Action", action)
+        print("Source", source)
+        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", "x")
     elif action == "ToggleMute": #fertig
         updateSceneList()
         updateSpecialSources()
