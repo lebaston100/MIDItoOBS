@@ -118,7 +118,7 @@ If this happens to you, plase install the Visual C++ Redistributable from Micros
 
 If you have any other problem, just open a Github issue or DM me @lebaston100 (Twitter/Instagram)
 
-##Contributors
+## Contributors
 
 I had never imagined that so "many" people would contribute something to the project. Thanks to everyone who submitted a bug report or pull request.
 Special thanks to:
