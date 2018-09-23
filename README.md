@@ -118,6 +118,17 @@ If this happens to you, plase install the Visual C++ Redistributable from Micros
 
 If you have any other problem, just open a Github issue or DM me @lebaston100 (Twitter/Instagram)
 
+##Contributors
+
+I had never imagined that so "many" people would contribute something to the project. Thanks to everyone who submitted a bug report or pull request.
+Special thanks to:
+
+- [ptitodd](https://github.com/ptitodd) (Adding program_change message handling)
+- [asquelt](https://github.com/asquelt) (making it work in python2)
+- [Alex-Dash](https://github.com/Alex-Dash) (make the volume control linear)
+- [imcrazytwkr](https://github.com/imcrazytwkr) (completly refactoring the main.py)
+
+
 ### Tested on/with:
 - Win 7 Build 7601
 - Win 10 Build 14393/Build 17134
