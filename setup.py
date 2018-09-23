@@ -298,8 +298,6 @@ def setupButtonEvents(action, NoC, msgType):
         if scene != "--Current--":
             source = source + '", "scene": "' + scene
         action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-        print("Action", action)
-        print("Source", source)
         saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", "x")
     elif action == "ToggleMute": #fertig
         updateSceneList()
