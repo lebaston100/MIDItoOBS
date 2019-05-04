@@ -292,13 +292,13 @@ def setupButtonEvents(action, NoC, msgType):
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
-        source = printArraySelect(tempSceneList)
+        source = source1 = printArraySelect(tempSceneList)
         sceneListShort.append("--Current--")
         scene = printArraySelect(sceneListShort)
         if scene != "--Current--":
             source = source + '", "scene": "' + scene
         action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", "x")
+        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", source1)
     elif action == "ToggleMute": #fertig
         updateSceneList()
         updateSpecialSources()

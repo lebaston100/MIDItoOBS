@@ -112,7 +112,7 @@ class MidiHandler:
 
         for result in results:
             if self.send_action(result):
-                break
+                pass
 
     def handle_midi_fader(self, control, value):
         query = Query()
@@ -129,7 +129,6 @@ class MidiHandler:
             if input_type == "button":
                 if value == 127 and not self.send_action(result):
                     continue
-                break
 
             if input_type == "fader":
                 command = result["cmd"]
@@ -137,18 +136,15 @@ class MidiHandler:
 
                 if command == "SetSourcePosition" or command == "SetSourceScale":
                     self.obs_socket.send(action % scaled)
-                    break
 
                 # Super dirty hack but @AlexDash says that it works
                 # @TODO: find an explanation _why_ it works
                 if command == "SetVolume":
                     # Yes, this literally raises a float to a third degree
                     self.obs_socket.send(action % scaled**3)
-                    break
 
                 if command == "SetSourceRotation" or command == "SetTransitionDuration" or command == "SetSyncOffset":
                     self.obs_socket.send(action % int(scaled))
-                    break
 
     def handle_obs_message(self, message):
         self.log.debug("Received new message from OBS")
