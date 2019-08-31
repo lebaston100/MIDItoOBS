@@ -37,11 +37,11 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "ResetSceneItem": """{"request-type": "ResetSceneItem", "message-id" : "1", "item": %s}""",
                "SetTextGDIPlusText": """{"request-type": "SetTextGDIPlusProperties", "message-id" : "1", "source": "%s", "text": "%s"}""",
                "SetBrowserSourceURL": """{"request-type": "SetBrowserSourceProperties", "message-id" : "1", "source": "%s", "url": "%s"}""",
-               "SetSourcePosition": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene": "%s", "item": "%s", "position": {"%s": %s}}""",
-               "SetSourceRotation": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene": "%s", "item": "%s", "rotation": %s}""",
+               "SetSourcePosition": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "position": {"%s": %s}}""",
+               "SetSourceRotation": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "rotation": %s}""",
                "SetSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
                "ToggleSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
-               "SetSourceScale": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene": "%s", "item": "%s", "scale": {"%s": %s}}""",
+               "SetSourceScale": """{{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "scale": {{"%s": %s}}}}""",
                "ReloadBrowserSource": """{"request-type": "SetBrowserSourceProperties", "message-id" : "1", "source": "%s", "url": "%s"}"""}
 
 sceneListShort = []
@@ -199,11 +199,11 @@ def setupFaderEvents(action, NoC, msgType):
             print("%s: Source '%s' in scene '%s'" % (counter, line["source"], line["scene"]))
             counter += 1
         selected = tempSceneList[int(input("Select 0-%s: " % str(len(tempSceneList)-1)))]
-        tempTargetList = ["x", "y"]
-        target = int(input("\n0: X\n1: Y\nSelect Target to change (0-1): "))
-        if target in range(0, 2):
+        tempTargetList = ["x", "y", 'x": {0}, "y']
+        target = int(input("\n0: X\n1: Y\n2: Both\nSelect Target to change (0-2): "))
+        if target in range(0, 3):
             scale = askForInputScaling()
-            action = jsonArchive["SetSourceScale"] % (selected["scene"], selected["source"], tempTargetList[target], "%s")
+            action = jsonArchive["SetSourceScale"] % (selected["scene"], selected["source"], tempTargetList[target], "{0}")
             saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourceScale")
         
 def setupButtonEvents(action, NoC, msgType):
@@ -282,7 +282,7 @@ def setupButtonEvents(action, NoC, msgType):
         sceneListShort.append("--Current--")
         scene = printArraySelect(sceneListShort)
         if scene != "--Current--":
-            source = source + '", "scene": "' + scene
+            source = source + '", "scene-name": "' + scene
         action = jsonArchive["SetSourceVisibility"] % (source, str(render))
         saveButtonToFile(msgType, NoC, "button" , action)
     elif action == "ToggleSourceVisibility": #fertig
@@ -473,7 +473,7 @@ def updateSceneList():
         sceneListLong = jsn["scenes"]
         for item in jsn["scenes"]:
             sceneListShort.append(item["name"])
-        print("Scenes updatet")
+        print("Scenes updated")
     else:
         print("Failed to update")
     ws.close()
@@ -492,7 +492,7 @@ def updateSpecialSources():
                 x=1
             else:
                 specialSourcesList.append(jsn[line])
-        print("Special sources updatet")
+        print("Special sources updated")
     else:
         print("Failed to update")
     ws.close()
@@ -508,7 +508,7 @@ def updateProfileList():
     if jsn["message-id"] == "99999999":
         for line in jsn["profiles"]:
             profilesList.append(line["profile-name"])
-        print("Profiles List updatet")
+        print("Profiles List updated")
     else:
         print("Failed to update")
     ws.close()
@@ -524,7 +524,7 @@ def updatesceneCollectionList():
     if jsn["message-id"] == "99999999":
         for line in jsn["scene-collections"]:
             sceneCollectionList.append(line["sc-name"])
-        print("Scene Collection List updatet")
+        print("Scene Collection List updated")
     else:
         print("Failed to update")
     ws.close()

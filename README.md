@@ -70,7 +70,7 @@ This script let's you use a MIDI controller like the Novation Launchpad, Ableton
   - SetSyncOffset: Sets the sync offset of a source(in ns)
   - SetSourcePosition: Sets the x or y position of a source (in px)
   - SetSourceRotation: Sets the rotation of a source (in degree)
-  - SetSourceScale: Sets the x or y scale of a source
+  - SetSourceScale: Sets the scale for x/y or both of a source (For the scaling 1 = original scale)
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms)
 - Now you can either setup another button/fader by repeating the steps above(except starting the script again) or just close the window to exit the configuration
   
@@ -82,11 +82,11 @@ A midi value can be something between 0-127. That is a very limited number.
 
 You will only be asked for Input Scale setup if it's required for the function(SetSourcePosition, SetSourceRotation, SetSourceScale, SetSyncOffset, SetTransitionDuration).
 
-The first value you have to enter(lower output value) is the value that will be sent when the fader is sending a 0. The second value you have to enter(higher output value) is the value that will be sent when the fader is sending a 127. The range between the 2 numbers will be interpolated.
+The first value you have to enter(lower output value) is the value that will be sent when the fader is sending a 0. The second value you have to enter(higher output value) is the value that will be sent when the fader is sending a 127. The range between the 2 numbers will be interpolated linearly.
 
 ## Sidenotes:
 
-- You can change the IP and Port by modifying the main.py(line 5/6) and setup.py(line 6/7) with a text editor if the scritp is running on another PC on the network. 
+- You can change the IP and Port by modifying the main.py(line 5/6) and setup.py(line 6/7) with a text editor if the script is running on another PC on the network. 
 
 ## Setting up "macros" (optional):
 
@@ -130,10 +130,9 @@ Special thanks to:
 
 
 ### Tested on/with:
-- Win 7 Build 7601
-- Win 10 Build 14393/Build 17134
-- Python 3.6.4:d48eceb/3.6.5:f59c0932b4/v3.7.0:1bf9cc5093
-- obs-studio 21.0.1/22.0.1/22.0.2
-- obs-websocket 4.3.1/4.4.0
+- Win 10 Build 18362
+- Python 3.7.0:1bf9cc5093
+- obs-studio 23.2.1
+- obs-websocket 4.6.1
 - KORG nanoPAD
 - Hercules DJ Control MP3
