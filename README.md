@@ -1,5 +1,5 @@
 # Midi OBS what???
-This script let's you use a MIDI controller like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to switch scenes, start/stop recording/streaming, control volume/delay/transition time and more in [obs-studio](https://github.com/jp9000/obs-studio).
+This script let's you use a MIDI controller like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to switch scenes, start/stop recording/streaming, control volume/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
 ## Requirements
 
@@ -10,7 +10,7 @@ This script let's you use a MIDI controller like the Novation Launchpad, Ableton
   - [mido](https://github.com/olemb/mido)
   - [python-rtmidi](https://pypi.python.org/pypi/python-rtmidi)
   - [websocket-client](https://github.com/websocket-client/websocket-client)
-- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.4.0)
+- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.6.1)
   
 ## Setup Part 1
 
@@ -29,7 +29,7 @@ This script let's you use a MIDI controller like the Novation Launchpad, Ableton
 
 ## Setup Part 3
 
-- [Download the repository](https://github.com/lebaston100/) or clone it
+- [Download the repository](https://github.com/lebaston100/MIDItoOBS/archive/master.zip) or clone it
 - Connect your MIDI controller
 - Launch obs-studio
 - Launch the setup.py (Try double click or the "Run Setup.bat" if you are on Windows)
