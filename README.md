@@ -104,7 +104,7 @@ You can assign unlimited different actions to the same button. This requires edi
 - If you're a first time use make sure to follow setup steps 1-3
   - You can launch setup.py anytime(as long as main.py is not running) to change the configuration of a single button/fader without reconfiguring the whole controller even if you get asked for the controller every time
 - Always make sure that obs is running before launching any of the scripts
-- Launch the main.py file (Try double click or the "Run Setup.bat" if you are on Windows)
+- Launch the main.py file (Try double click or the "Run Main.bat" if you are on Windows)
 - The console gives you information when it successfully connects to OBS
 - Also, if there is an error it will be printed out(If you ignore case sensitive fields or the scene doesn't exist)
 - Third, it prints out a message every time you press a button that is setup
