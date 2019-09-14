@@ -1,0 +1,4 @@
+mido==1.2.9
+tinydb==3.14.1
+websocket_client==0.56.0
+python-rtmidi==1.3.0

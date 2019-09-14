@@ -4,9 +4,7 @@ from tinydb import TinyDB, Query
 from sys import exit, stdout
 from os import path
 
-import logging
-import json
-import mido
+import logging, json, mido
 
 TEMPLATES = {
 "ToggleSourceVisibility": """{
@@ -43,6 +41,29 @@ def get_logger(name, level=logging.INFO):
     logger.addHandler(std_output)
     return logger
 
+class DeviceHandler:
+    def __init__(self, device, deviceid):
+        self.log = get_logger("midi_to_obs_device")
+        self._id = deviceid
+        self._devicename = device["devicename"]
+        self._port = 0
+
+        try:
+            self.log.debug("Attempting to open midi port `%s`" % self._devicename)
+            self._port = mido.open_input(name=self._devicename, callback=self.callback)
+        except:
+            self.log.critical("\nCould not open", self._devicename)
+            self.log.critical("The midi device is used by another application, isnot connected or has a different name.")
+            self.log.critical("Please plug the device in or run setup.py again and restart this script\n")
+            # EIO 5 (Input/output error)
+            exit(5)
+        
+    def callback(self, msg):
+        handler.handle_midi_input(msg, self._id, self._devicename)
+
+    def close(self):
+        self._port_close()
+
 class MidiHandler:
     # Initializes the handler class
     def __init__(self, config_path="config.json", ws_server="localhost", ws_port=4444):
@@ -52,32 +73,29 @@ class MidiHandler:
         # Internal service variables
         self._action_buffer = []
         self._action_counter = 2
+        self._portobjects = []
 
         self.log.debug("Trying to load config file  from %s" % config_path)
-        self.db = TinyDB(config_path, indent=4)
-        result = self.db.search(Query().type.exists())
+        self.database = TinyDB(config_path, indent=4)
+        self.db = self.database.table("keys", cache_size=0)
+        self.devdb = self.database.table("devices", cache_size=0)
+        
+        result = self.devdb.all()
         if not result:
             self.log.critical("Config file %s doesn't exist or is damaged" % config_path)
             # ENOENT (No such file or directory)
             exit(2)
 
         self.log.info("Successfully parsed config file")
-        port_name = str(result[0]["value"])
 
-        self.log.debug("Retrieved MIDI port name `%s`" % port_name)
+        self.log.debug("Retrieved MIDI port name(s) `%s`" % result)
+        #create new class with handler and open from there, just create new instances
+        for device in result:
+            self._portobjects.append(DeviceHandler(device, device.doc_id))
+
         del result
 
-        try:
-            self.log.debug("Attempting to open midi port")
-            self.port = mido.open_input(name=port_name, callback=self.handle_midi_input)
-        except:
-            self.log.critical("The midi device %s is not connected or has a different name" % port_name)
-            self.log.critical("Please plug the device in or run setup.py again and restart this script")
-            # EIO 5 (Input/output error)
-            exit(5)
-
-        self.log.info("Successfully initialized midi port `%s`" % port_name)
-        del port_name
+        self.log.info("Successfully initialized midi port(s)")
 
         # Properly setting up a Websocket client
         self.log.debug("Attempting to connect to OBS using websocket protocol")
@@ -87,24 +105,24 @@ class MidiHandler:
         self.obs_socket.on_close = self.handle_obs_close
         self.obs_socket.on_open = self.handle_obs_open
 
-    def handle_midi_input(self, message):
-        self.log.debug("Received %s message from midi: %s" % (message.type, message))
+    def handle_midi_input(self, message, deviceID, deviceName):
+        self.log.debug("Received", message, "from device", deviceID, "/", deviceName)
 
         if message.type == "note_on":
-            return self.handle_midi_button(message.type, message.note)
+            return self.handle_midi_button(deviceID, message.type, message.note)
 
         # `program_change` messages can be only used as regular buttons since
         # they have no extra value, unlike faders (`control_change`)
         if message.type == "program_change":
-            return self.handle_midi_button(message.type, message.program)
+            return self.handle_midi_button(deviceID, message.type, message.program)
 
         if message.type == "control_change":
-            return self.handle_midi_fader(message.control, message.value)
+            return self.handle_midi_fader(deviceID, message.control, message.value)
 
 
-    def handle_midi_button(self, type, note):
+    def handle_midi_button(self, deviceID, type, note):
         query = Query()
-        results = self.db.search((query.msg_type == type) & (query.msgNoC == note))
+        results = self.db.search((query.msg_type == type) & (query.msgNoC == note) & (query.deviceID == deviceID))
 
         if not results:
             self.log.debug("Cound not find action for note %s", note)
@@ -114,9 +132,9 @@ class MidiHandler:
             if self.send_action(result):
                 pass
 
-    def handle_midi_fader(self, control, value):
+    def handle_midi_fader(self, deviceID, control, value):
         query = Query()
-        results = self.db.search((query.msg_type == "control_change") & (query.msgNoC == control))
+        results = self.db.search((query.msg_type == "control_change") & (query.msgNoC == control) & (query.deviceID == deviceID))
 
         if not results:
             self.log.debug("Cound not find action for fader %s", control)
@@ -237,8 +255,10 @@ class MidiHandler:
         self.obs_socket.run_forever()
 
     def close(self, teardown=False):
-        self.log.debug("Attempting to close midi port")
-        self.port.close()
+        self.log.debug("Attempting to close midi port(s)")
+        result = self.devdb.all()
+        for device in result:
+            device.close()
 
         self.log.info("Midi connection has been closed successfully")
 

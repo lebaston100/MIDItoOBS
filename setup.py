@@ -1,4 +1,4 @@
-import mido, threading, sys, atexit, json, time
+import mido, threading, sys, atexit, json, time, signal
 from tinydb import TinyDB, Query
 from websocket import create_connection
 
@@ -7,7 +7,9 @@ serverIP = "localhost"
 serverPort = "4444"
 ####
 
-db = TinyDB("config.json", indent=4)
+database = TinyDB("config.json", indent=4)
+db = database.table("keys", cache_size=0)
+devdb = database.table("devices", cache_size=0)
 buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "SetCurrentTransition", "SetSourceVisibility", "ToggleSourceVisibility", "ToggleMute", "SetMute",
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
@@ -52,18 +54,25 @@ profilesList = []
 sceneCollectionList = []
 gdisourcesList = []
 
+midiports = []
+
 ignore = 255
 savetime1 = time.time()
 
-def exitScript():
+def ScriptExit(signal, frame):
+    print("Closing midi ports...")
+    for port in midiports:
+        port["object"].close()
+    print("Closing database...")
+    database.close()
     print("Exiting...")
-    midiport.close()
-    db.close()
+    sys.exit(0)
 
-def midicallback(message):
+def midicallback(message, deviceID, deviceName):
     global ignore
     print()
-    print(message)
+    print("Received message", message)
+    print("from device", deviceName)
     print()
     if message.type == "note_on": #button only
         ignore = message.note
@@ -75,7 +84,7 @@ def midicallback(message):
         input_select = int(input("Select 0-%s: " % str(len(buttonActions)-1)))
         if input_select in range(0, len(buttonActions)):
             action = buttonActions[input_select]
-            setupButtonEvents(action, message.note, message.type)
+            setupButtonEvents(action, message.note, message.type, deviceID)
     elif message.type == "program_change": #button only
         ignore = message.program
         print("Select Action:")
@@ -86,7 +95,7 @@ def midicallback(message):
         input_select = int(input("Select 0-%s: " % str(len(buttonActions)-1)))
         if input_select in range(0, len(buttonActions)):
             action = buttonActions[input_select]
-            setupButtonEvents(action, message.program, message.type)
+            setupButtonEvents(action, message.program, message.type, deviceID)
     elif message.type == "control_change": #button or fader
         ignore = message.control
         print("Select input type:\n0: Button\n1: Fader/Knob\n2: Ignore")
@@ -103,7 +112,7 @@ def midicallback(message):
                     input_select = int(input("Select 0-%s: " % str(len(buttonActions)-1)))
                     if input_select in range(0, len(buttonActions)):
                         action = buttonActions[input_select]
-                        setupButtonEvents(action, message.control, message.type)
+                        setupButtonEvents(action, message.control, message.type, deviceID)
                 elif input_select == 1:
                     print()
                     print("Select Action:")
@@ -114,12 +123,12 @@ def midicallback(message):
                     input_select = int(input("Select 0-%s: " % str(len(faderActions)-1)))
                     if input_select in range(0, len(faderActions)):
                         action = faderActions[input_select]
-                        setupFaderEvents(action, message.control, message.type)
+                        setupFaderEvents(action, message.control, message.type, deviceID)
         except ValueError:
             print("Please try again and enter a valid number")
 
-#I know this is kinda messy, but i challange you to make a better version(as a native plugin or pull request to obs-studio)
-def setupFaderEvents(action, NoC, msgType):
+#I know this is very messy, but i challange you to make a better version(as a native plugin or pull request to obs-studio)
+def setupFaderEvents(action, NoC, msgType, deviceID):
     print()
     print("You selected: %s" % action)
     if action == "SetVolume":
@@ -135,7 +144,7 @@ def setupFaderEvents(action, NoC, msgType):
         source = printArraySelect(tempSceneList)
         scale = (0,1)
         action = jsonArchive["SetVolume"] % (source, "%s")
-        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetVolume")
+        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetVolume", deviceID)
     elif action == "SetSyncOffset":
         updateSceneList()
         updateSpecialSources()
@@ -149,7 +158,7 @@ def setupFaderEvents(action, NoC, msgType):
         source = printArraySelect(tempSceneList)
         scale = askForInputScaling()
         action = jsonArchive["SetSyncOffset"] % (source, "%s")
-        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSyncOffset")
+        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSyncOffset", deviceID)
     elif action == "SetSourcePosition":
         updateSceneList()
         tempSceneList = []
@@ -167,7 +176,7 @@ def setupFaderEvents(action, NoC, msgType):
         if target in range(0, 2):
             scale = askForInputScaling()
             action = jsonArchive["SetSourcePosition"] % (selected["scene"], selected["source"], tempTargetList[target], "%s")
-            saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourcePosition")
+            saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourcePosition", deviceID)
     elif action == "SetSourceRotation":
         updateSceneList()
         tempSceneList = []
@@ -182,11 +191,11 @@ def setupFaderEvents(action, NoC, msgType):
         selected = tempSceneList[int(input("Select 0-%s: " % str(len(tempSceneList)-1)))]
         scale = askForInputScaling()
         action = jsonArchive["SetSourceRotation"] % (selected["scene"], selected["source"], "%s")
-        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourceRotation")
+        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourceRotation", deviceID)
     elif action == "SetTransitionDuration":
         scale = askForInputScaling()
         action = jsonArchive["SetTransitionDuration"]
-        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetTransitionDuration")
+        saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetTransitionDuration", deviceID)
     elif action == "SetSourceScale":
         updateSceneList()
         tempSceneList = []
@@ -204,23 +213,24 @@ def setupFaderEvents(action, NoC, msgType):
         if target in range(0, 3):
             scale = askForInputScaling()
             action = jsonArchive["SetSourceScale"] % (selected["scene"], selected["source"], tempTargetList[target], "{0}")
-            saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourceScale")
+            saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourceScale", deviceID)
         
-def setupButtonEvents(action, NoC, msgType):
+def setupButtonEvents(action, NoC, msgType, deviceID):
     print()
     print("You selected: %s" % action)
-    if action == "SetCurrentScene": #fertig
+    if action == "SetCurrentScene":
         updateSceneList()
         scene = printArraySelect(sceneListShort)
         action = jsonArchive["SetCurrentScene"] % scene
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetPreviewScene": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SetPreviewScene":
         updateSceneList()
         scene = printArraySelect(sceneListShort)
         action = jsonArchive["SetPreviewScene"] % scene
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "TransitionToProgram": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "TransitionToProgram":
         updateTransitionList()
+        print("Please select a transition to be used:")
         transitionList.append("--Current--")
         transition = printArraySelect(transitionList)
         print(transition)
@@ -229,43 +239,43 @@ def setupButtonEvents(action, NoC, msgType):
             action = jsonArchive["TransitionToProgram"] % tmp
         else:
             action = jsonArchive["TransitionToProgram"] % ""
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetCurrentTransition": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SetCurrentTransition":
         updateTransitionList()
         transition = printArraySelect(transitionList)
         action = jsonArchive["SetCurrentTransition"] % transition
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StartStopStreaming": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StartStopStreaming":
         action = jsonArchive["StartStopStreaming"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StartStreaming": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StartStreaming":
         action = jsonArchive["StartStreaming"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StopStreaming": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StopStreaming":
         action = jsonArchive["StopStreaming"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StartStopRecording": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StartStopRecording":
         action = jsonArchive["StartStopRecording"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StartRecording": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StartRecording":
         action = jsonArchive["StartRecording"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StopRecording": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StopRecording":
         action = jsonArchive["StopRecording"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StartStopReplayBuffer": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StartStopReplayBuffer":
         action = jsonArchive["StartStopReplayBuffer"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StartReplayBuffer": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StartReplayBuffer":
         action = jsonArchive["StartReplayBuffer"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "StopReplayBuffer": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "StopReplayBuffer":
         action = jsonArchive["StopReplayBuffer"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SaveReplayBuffer": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SaveReplayBuffer":
         action = jsonArchive["SaveReplayBuffer"]
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetSourceVisibility": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SetSourceVisibility":
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
@@ -284,8 +294,8 @@ def setupButtonEvents(action, NoC, msgType):
         if scene != "--Current--":
             source = source + '", "scene-name": "' + scene
         action = jsonArchive["SetSourceVisibility"] % (source, str(render))
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "ToggleSourceVisibility": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "ToggleSourceVisibility":
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
@@ -298,8 +308,8 @@ def setupButtonEvents(action, NoC, msgType):
         if scene != "--Current--":
             source = source + '", "scene": "' + scene
         action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", source1)
-    elif action == "ToggleMute": #fertig
+        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", source1, deviceID)
+    elif action == "ToggleMute":
         updateSceneList()
         updateSpecialSources()
         tempSceneList = []
@@ -311,8 +321,8 @@ def setupButtonEvents(action, NoC, msgType):
             tempSceneList.append(item)
         source = printArraySelect(tempSceneList)
         action = jsonArchive["ToggleMute"] % source
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetMute": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SetMute":
         updateSceneList()
         updateSpecialSources()
         tempSceneList = []
@@ -330,27 +340,27 @@ def setupButtonEvents(action, NoC, msgType):
         else:
             muted = "true"
         action = jsonArchive["SetMute"] % (source, muted)
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetTransitionDuration": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SetTransitionDuration":
         time = int(input("Input the desired time(in milliseconds): "))
         action = jsonArchive["SetTransitionDuration"] % time
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetCurrentProfile": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SetCurrentProfile":
         updateProfileList()
         profilename = printArraySelect(profilesList)
         action = jsonArchive["SetCurrentProfile"] % profilename
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetRecordingFolder": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SetRecordingFolder":
         recpath = str(input("Input the desired path: "))
         action = jsonArchive["SetRecordingFolder"] % recpath
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "SetCurrentSceneCollection": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "SetCurrentSceneCollection":
         updatesceneCollectionList()
         scenecollection = printArraySelect(sceneCollectionList)
         print(scenecollection)
         action = jsonArchive["SetCurrentSceneCollection"] % scenecollection
-        saveButtonToFile(msgType, NoC, "button" , action)
-    elif action == "ResetSceneItem": #fertig
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "ResetSceneItem":
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
@@ -365,7 +375,7 @@ def setupButtonEvents(action, NoC, msgType):
         else:
             render = '"' + str(source) + '"'
         action = jsonArchive["ResetSceneItem"] % (render)
-        saveButtonToFile(msgType, NoC, "button" , action)
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
     elif action == "SetTextGDIPlusText":
         updateSceneList()
         tempSceneList = []
@@ -376,7 +386,7 @@ def setupButtonEvents(action, NoC, msgType):
         source = printArraySelect(tempSceneList)
         text = str(input("Input the desired text: "))
         action = jsonArchive["SetTextGDIPlusText"] % (source, text)
-        saveButtonToFile(msgType, NoC, "button" , action)
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
     elif action == "SetBrowserSourceURL":
         updateSceneList()
         tempSceneList = []
@@ -387,7 +397,7 @@ def setupButtonEvents(action, NoC, msgType):
         source = printArraySelect(tempSceneList)
         url = str(input("Input the desired URL: "))
         action = jsonArchive["SetBrowserSourceURL"] % (source, url)
-        saveButtonToFile(msgType, NoC, "button" , action)
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
     elif action == "ReloadBrowserSource":
         updateSceneList()
         tempSceneList = []
@@ -397,38 +407,38 @@ def setupButtonEvents(action, NoC, msgType):
                     tempSceneList.append(line["name"])
         source = printArraySelect(tempSceneList)
         action = jsonArchive["ReloadBrowserSource"] % (source, "%s")
-        saveTODOButtonToFile(msgType, NoC, "button" , action, "ReloadBrowserSource", source)
+        saveTODOButtonToFile(msgType, NoC, "button" , action, "ReloadBrowserSource", source, deviceID)
 
         
-def saveFaderToFile(msg_type, msgNoC, input_type, action, scale, cmd):
-    print("Saved %s with control %s for action %s" % (msg_type, msgNoC, cmd))
+def saveFaderToFile(msg_type, msgNoC, input_type, action, scale, cmd, deviceID):
+    print("Saved %s with control %s for action %s on device %s" % (msg_type, msgNoC, cmd, deviceID))
     Search = Query()
-    result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC))
+    result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
     if result:
-        db.remove(Search.msgNoC == msgNoC)
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd})
+        db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd, "deviceID": deviceID})
     else:
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd})
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd, "deviceID": deviceID})
 
-def saveButtonToFile(msg_type, msgNoC, input_type, action):
-    print("Saved %s with note/control %s for action %s" % (msg_type, msgNoC, action))
+def saveButtonToFile(msg_type, msgNoC, input_type, action, deviceID):
+    print("Saved %s with note/control %s for action %s on device %s" % (msg_type, msgNoC, action, deviceID))
     Search = Query()
-    result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC))
+    result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
     if result:
-        db.remove(Search.msgNoC == msgNoC)
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action})
+        db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "deviceID": deviceID})
     else:
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action})
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "deviceID": deviceID})
 
-def saveTODOButtonToFile(msg_type, msgNoC, input_type, action, request, target):
-    print("Saved %s with note/control %s for action %s" % (msg_type, msgNoC, action))
+def saveTODOButtonToFile(msg_type, msgNoC, input_type, action, request, target, deviceID):
+    print("Saved %s with note/control %s for action %s on device %s" % (msg_type, msgNoC, action, deviceID))
     Search = Query()
-    result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC))
+    result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
     if result:
-        db.remove(Search.msgNoC == msgNoC)
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target})
+        db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID})
     else:
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target})
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID})
 
 def printArraySelect(array):
     counter = 0
@@ -446,7 +456,7 @@ def askForInputScaling():
 def updateTransitionList():
     global transitionList
     ws = create_connection("ws://" + serverIP + ":" + serverPort)
-    print("Updating transition list, plase wait")
+    print("\nUpdating transition list, plase wait")
     ws.send("""{"request-type": "GetTransitionList", "message-id": "999999"}""")
     result =  ws.recv()
     jsn = json.loads(result)
@@ -463,7 +473,7 @@ def updateSceneList():
     global sceneListShort
     global sceneListLong
     ws = create_connection("ws://" + serverIP + ":" + serverPort)
-    print("Updating scene list, plase wait")
+    print("\nUpdating scene list, plase wait")
     ws.send("""{"request-type": "GetSceneList", "message-id": "9999999"}""")
     result =  ws.recv()
     jsn = json.loads(result)
@@ -481,7 +491,7 @@ def updateSceneList():
 def updateSpecialSources():
     global specialSourcesList
     ws = create_connection("ws://" + serverIP + ":" + serverPort)
-    print("Updating special sources, plase wait")
+    print("\nUpdating special sources, plase wait")
     ws.send("""{"request-type": "GetSpecialSources", "message-id": "99999999"}""")
     result =  ws.recv()
     jsn = json.loads(result)
@@ -489,7 +499,7 @@ def updateSpecialSources():
     if jsn["message-id"] == "99999999":
         for line in jsn:
             if line == "status" or line == "message-id":
-                x=1
+                pass
             else:
                 specialSourcesList.append(jsn[line])
         print("Special sources updated")
@@ -516,7 +526,7 @@ def updateProfileList():
 def updatesceneCollectionList():
     global sceneCollectionList
     ws = create_connection("ws://" + serverIP + ":" + serverPort)
-    print("Updating Scene Collection List, plase wait")
+    print("\nUpdating Scene Collection List, plase wait")
     ws.send("""{"request-type": "ListSceneCollections", "message-id": "99999999"}""")
     result =  ws.recv()
     jsn = json.loads(result)
@@ -528,62 +538,140 @@ def updatesceneCollectionList():
     else:
         print("Failed to update")
     ws.close()
+
+def configureDevices(switch):
+    dbresult = devdb.all()
+    if switch:
+        print("\nTell me: What do you want to do?\n1: Delete all devices from config and re-add (Warning: this will dereference all button and fader actions(so they will no longer work). This might cause device confusion later.\n2: Remove a single device from the configuration (+ their midi assignments)\n3: Add new device\n4: Skip device configuration (Warning: If no device has been configured before, MIDItoOBS will NOT work)")
+        action_select = int(input("Select 1-4: "))
+        if action_select == 1:
+            print("Removing all devices from the database....")
+            devdb.purge() #purge database table before adding new devices
+        elif action_select == 2:
+            removeDevice()
+            return
+        elif action_select == 3:
+            pass
+        else:
+            return
+    
+    print("\nWhich device do you want to add?")
+    exitflag = 0
+    while not exitflag:
+        availableDeviceList = mido.get_input_names()
+        deviceList = []
+        counter = 0
+        inUseDeviceList = devdb.all()
+        for device in availableDeviceList:
+            if devInDB(device, inUseDeviceList):
+                pass
+            else:
+                print("%s: %s" % (counter, device))
+                counter += 1
+                deviceList.append(device)
+            
+        if len(deviceList) == 0:
+            print("No midi input device available")
+            return
+        if len(deviceList) < 2:
+            input_select = int(input("Select 0: "))
+        else:
+            input_select = int(input("Select 0-%s: " % str(len(deviceList)-1)))
+        print("Adding:", deviceList[input_select])
+        result = devdb.search(Query().devicename == deviceList[input_select])
+        if not result:
+            deviceID = devdb.insert({"devicename": deviceList[input_select]})
+        print("Do you want to add another device?\n1: Yes\n2: No")
+        action_select = int(input("Select 1 or 2: "))
+        if action_select == 2:
+            exitflag = 1
+
+def devInDB(devicename, devicedatabase):
+    for entry in devicedatabase:
+        if entry["devicename"] == devicename:
+            return True
+    return False
+
+def removeDevice():
+    devices = devdb.all()
+    print("So you want to remove a device. Please keep in mind that this will not only remove the device but remove every action assigned to the device.\nWhich device and configuration do you want to remove?")
+    counter = 0
+    for (index, device) in enumerate(devices):
+        print("%s: %s" % (counter, device["devicename"]))
+        counter += 1
+    device_select = int(input("Select 0-%s: " % str(len(devices)-1)))
+    print("Selected:", devices[device_select])
+    yousure = input("Are you really sure you want to remove the devices and all it's assignments?\nType 'YES' and press enter: ")
+    if yousure == "YES":
+        print("As you wish. Deleting now......")
+        devdb.remove(doc_ids=[device_select])
+        db.remove(Query().deviceID == device_select)
         
 def mainLoop():
     global ignore
     global savetime1
     while True:
-        try:
-            msg = midiport.receive()
-            if msg:
-                if msg.type == "note_on":
-                    if msg.note != ignore:
-                        midicallback(msg)
-                        savetime1 = time.time()
-                if msg.type == "program_change":
-                    if msg.program != ignore:
-                        midicallback(msg)
-                        savetime1 = time.time()
-                if msg.type == "control_change":
-                    if msg.control != ignore:
-                        midicallback(msg)
-                        savetime1 = time.time()
-            if time.time() - savetime1 > 3:
-                savetime1 = time.time()
-                ignore = 255
-        except KeyboardInterrupt:
-            print("Exiting")
-            sys.exit()
-            break
+        for device in midiports:
+            try:
+                msg = device["object"].poll()
+                if msg:
+                    if msg.type == "note_on":
+                        if msg.note != ignore:
+                            midicallback(msg, device["id"], device["devicename"])
+                            savetime1 = time.time()
+                    if msg.type == "program_change":
+                        if msg.program != ignore:
+                            midicallback(msg, device["id"], device["devicename"])
+                            savetime1 = time.time()
+                    if msg.type == "control_change":
+                        if msg.control != ignore:
+                            midicallback(msg, device["id"], device["devicename"])
+                            savetime1 = time.time()
+                if time.time() - savetime1 > 3:
+                    savetime1 = time.time()
+                    ignore = 255
+            except KeyboardInterrupt:
+                ScriptExit(0, 0)
+                break
 
 if __name__ == "__main__":
-    print("MIDItoOBS made by lebaston100.de")
+    print("MIDItoOBS made by https://github.com/lebaston100\n")
+    print("This setup assistant will guide you though the initial setup. If you experience any problems that you can not solve on your own feel free to open an issue on Github\n")
+    print("!!Important!!")
     print("!!MAKE SURE OBS IS RUNNING OR THIS SCRIPT WILL CRASH!!")
-    print("Select Midi Device")
-    deviceList = mido.get_input_names()
-    counter = 0
-    for device in deviceList:
-        print("%s: %s" % (counter, device))
-        counter += 1
-    input_select = int(input("Select 0-%s: " % str(len(deviceList)-1)))
-    if input_select in range(0, len(deviceList)):
-        print("You selected: %s (%s)" % (str(input_select), deviceList[input_select]))
-        result = db.search(Query().value == deviceList[input_select])
-        if result:
-                db.remove(Query().type == "device")
-                db.insert({"type" : "device", "value": deviceList[input_select]})
+    print("!!MAKE SURE THAT THE MIDI DEVICE(S) ARE NOT IN USE BY ANOTHER APPLICATION!!\n")
+
+    signal.signal(signal.SIGINT, ScriptExit)
+
+    #search if config available and a device configuration is present
+    result = devdb.all()
+    if result:
+        print("Please select the number of what you want to do:\n1: Re-Setup the midi devices that are used.\n2: Leave the selected midi devices as-is and just edit button/fader assignment")
+        action_select = int(input("Select 1 or 2: "))
+        if action_select == 1:
+            configureDevices(1) #start device settings dialog because user choice
+        elif action_select == 2:
+            pass #leave configuration as is
         else:
-                db.insert({"type" : "device", "value": deviceList[input_select]})
-        try:
-            midiport = mido.open_input(deviceList[input_select])
-        except:
-            print("The midi device might be used by another application.")
-            print("Please close the device in the other application and restart this script.")
-            time.sleep(8)
-            sys.exit()
-        atexit.register(exitScript)
-        print("Please press key or move fader/knob on midi controller")
-        mainLoop()
+            print("Invalid selection")
+            ScriptExit(0, 0)
     else:
-        print("Please select a valid device and restart the script")
-        sys.exit()
+        configureDevices(0) #start device settings dialog because nothing is set up yet
+        #the functions will return and we'll continue here
+
+    devices = devdb.all()
+    for device in devices: #gave up on documentation here
+        try:
+            tempmidiport = mido.open_input(device["devicename"])
+            tempobj = {"id": device.doc_id, "object": tempmidiport, "devicename": device["devicename"]}
+            midiports.append(tempobj)
+        except:
+            print("\nCould not open", device["devicename"])
+            print("The midi device might be used by another application.")
+            print("Please close the device in the other application and restart this script.\n")
+            database.close()
+            sys.exit(5)
+
+    print("\nPlease press key or move fader/knob on midi controller")
+    mainLoop()
+    ScriptExit(0, 0)
