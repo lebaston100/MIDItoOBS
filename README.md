@@ -155,5 +155,6 @@ Special thanks to:
 - obs-websocket 4.6.1
 - KORG nanoPAD
 - Hercules DJ Control MP3
+- Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad))
 
 Let me know if you had success with your device.
