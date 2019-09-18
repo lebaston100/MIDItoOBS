@@ -1,7 +1,7 @@
 # Midi OBS what???
 This script let's you use one or multiple MIDI controller like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to switch scenes, start/stop recording/streaming, control volume/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
-**Important**: If you upgrade to this version, your old configuration file is no longer usable and you have to re-create the entire mapping!! This is because of the new multi-device feature. (If this is a huge problem for you let me know and i'll tell you the steps to migrate by hand)
+**Important**: If you are upgrading from a version that you downloaded before Sep 14. 2019, your old configuration file is no longer usable and you have to re-create the entire mapping!! This is because of the new multi-device feature. (If this is a huge problem for you let me know and i'll tell you the steps to migrate the configuration by hand)
 
 ## Requirements
 
