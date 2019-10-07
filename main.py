@@ -3,8 +3,9 @@ from websocket import WebSocketApp
 from tinydb import TinyDB, Query
 from sys import exit, stdout
 from os import path
+from time import time
 
-import logging, json, mido
+import logging, json, mido, base64
 
 TEMPLATES = {
 "ToggleSourceVisibility": """{
@@ -198,6 +199,12 @@ class MidiHandler:
             self.log.debug("Removing action with message id %s from buffer" % message_id)
             self._action_buffer.remove(action)
             break
+        
+        if message_id == "MIDItoOBSscreenshot":
+            if payload["status"] == "ok":
+                with open(str(time()) + ".png", "wb") as fh:
+                    fh.write(base64.decodebytes(payload["img"][22:].encode()))
+                
 
     def handle_obs_error(self, ws, error=None):
         # Protection against potential inconsistencies in `inspect.ismethod`
