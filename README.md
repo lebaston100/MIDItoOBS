@@ -80,7 +80,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetSourceRotation: Sets the rotation of a source (in degree)
   - SetSourceScale: Sets the scale for x/y or both of a source (For the scaling 1 = original scale)
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms)
-  - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid raneg you can work in). This will automatically default to the first gain filter found in a source!
+  - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid range you can work in). This will automatically default to the first gain filter found in a source!
 - Now you can either setup another button/fader by repeating the steps above(except starting the script again) or just close the window to exit the configuration
   
 For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)
