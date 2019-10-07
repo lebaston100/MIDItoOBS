@@ -14,7 +14,7 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot"]
-faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration"]
+faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
                "TransitionToProgram": """{"request-type": "TransitionToProgram", "message-id" : "1"%s}""",
@@ -45,7 +45,8 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "ToggleSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
                "SetSourceScale": """{{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "scale": {{"%s": %s}}}}""",
                "ReloadBrowserSource": """{"request-type": "SetBrowserSourceProperties", "message-id" : "1", "source": "%s", "url": "%s"}""",
-               "TakeSourceScreenshot": """{"request-type": "TakeSourceScreenshot", "message-id" : "MIDItoOBSscreenshot","sourceName" : "%s", "embedPictureFormat": "png"}"""}
+               "TakeSourceScreenshot": """{"request-type": "TakeSourceScreenshot", "message-id" : "MIDItoOBSscreenshot","sourceName" : "%s", "embedPictureFormat": "png"}""",
+               "SetGainFilter": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"db": %s}}"""}
 
 sceneListShort = []
 sceneListLong = []
@@ -215,6 +216,25 @@ def setupFaderEvents(action, NoC, msgType, deviceID):
             scale = askForInputScaling()
             action = jsonArchive["SetSourceScale"] % (selected["scene"], selected["source"], tempTargetList[target], "{0}")
             saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetSourceScale", deviceID)
+    elif action == "SetGainFilter":
+        updateSceneList()
+        updateSpecialSources()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        for item in specialSourcesList:
+            tempSceneList.append(item)
+        source = printArraySelect(tempSceneList)
+        filtername = checkIfSourceHasGainFilter(source)
+        if filtername:
+            print("You will now be asked for the input scaling. The valid range for the gain filter is -30 (db) to 30 (db). You can select any range inside -30 to 30")
+            scale = askForInputScaling()
+            action = jsonArchive["SetGainFilter"] % (source, filtername, "%s")
+            saveFaderToFile(msgType, NoC, "fader" , action, scale, "SetGainFilter", deviceID)
+        else:
+            print("The selected source has no gain filter. Please add it in the source filter dialog and try again.")
         
 def setupButtonEvents(action, NoC, msgType, deviceID):
     print()
@@ -550,6 +570,20 @@ def updatesceneCollectionList():
         print("Failed to update")
     ws.close()
 
+def checkIfSourceHasGainFilter(sourcename):
+    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    print("\nChecking source filters, plase wait")
+    ws.send('{"request-type": "GetSourceFilters", "message-id": "MIDItoOBS-checksourcegainfilter", "sourceName": "' + sourcename + '"}')
+    result =  ws.recv()
+    ws.close()
+    jsn = json.loads(result)
+    if jsn["message-id"] == "MIDItoOBS-checksourcegainfilter":
+        for line in jsn["filters"]:
+            if line["type"] == "gain_filter":
+                return line["name"]
+    return False
+    
+
 def configureDevices(switch):
     dbresult = devdb.all()
     if switch:
@@ -615,8 +649,8 @@ def removeDevice():
     yousure = input("Are you really sure you want to remove the devices and all it's assignments?\nType 'YES' and press enter: ")
     if yousure == "YES":
         print("As you wish. Deleting now......")
-        devdb.remove(doc_ids=[device_select])
-        db.remove(Query().deviceID == device_select)
+        devdb.remove(doc_ids=[device_select+1])
+        db.remove(Query().deviceID == device_select+1)
         
 def mainLoop():
     global ignore

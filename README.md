@@ -1,5 +1,5 @@
 # Midi OBS what???
-This script let's you use one or multiple MIDI controller like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to switch scenes, start/stop recording/streaming, control volume/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
+This script let's you use one or multiple MIDI controller like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to switch scenes, start/stop recording/streaming, control volume/gain/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
 **Important**: If you are upgrading from a version that you downloaded before Sep 14. 2019, your old configuration file is no longer usable and you have to re-create the entire mapping!! This is because of the new multi-device feature. (If this is a huge problem for you let me know and i'll tell you the steps to migrate the configuration by hand)
 
@@ -80,6 +80,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetSourceRotation: Sets the rotation of a source (in degree)
   - SetSourceScale: Sets the scale for x/y or both of a source (For the scaling 1 = original scale)
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms)
+  - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid raneg you can work in). This will automatically default to the first gain filter found in a source!
 - Now you can either setup another button/fader by repeating the steps above(except starting the script again) or just close the window to exit the configuration
   
 For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)
@@ -98,9 +99,11 @@ If you select 1 you have a few options:
 
 A midi value can be something between 0-127. That is a very limited number.
 
-You will only be asked for Input Scale setup if it's required for the function(SetSourcePosition, SetSourceRotation, SetSourceScale, SetSyncOffset, SetTransitionDuration).
+You will only be asked for Input Scale setup if it's required for the function(SetSourcePosition, SetSourceRotation, SetSourceScale, SetSyncOffset, SetTransitionDuration, SetGainFilter).
 
 The first value you have to enter(lower output value) is the value that will be sent when the fader is sending a 0. The second value you have to enter(higher output value) is the value that will be sent when the fader is sending a 127. The range between the 2 numbers will be interpolated linearly.
+
+Some limitations might apply to the range you can use (see the comments above in the action list above).
 
 ## Sidenotes:
 
