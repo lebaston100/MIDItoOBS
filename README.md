@@ -71,7 +71,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetTextGDIPlusText: Sets the text of a GDI text source
   - SetBrowserSourceURL: Sets the url of a BrowserSource
   - ReloadBrowserSource: Reloads a BrowserSource
-  - TakeSourceScreenshot: Takes a screenshot of the selected source (not scene!) and saves it inside the MIDItoOBS folder as a png image
+  - TakeSourceScreenshot: Don't be fooled by the name; Takes a screenshot of the selected source or complete scene and saves it inside the MIDItoOBS folder as a png image
   
 - Available for faders
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))

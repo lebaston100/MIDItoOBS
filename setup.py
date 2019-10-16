@@ -436,6 +436,8 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
+        for scene in sceneListShort:
+            tempSceneList.append(scene)
         source = printArraySelect(tempSceneList)
         action = jsonArchive["TakeSourceScreenshot"] % (source)
         saveButtonToFile(msgType, NoC, "button" , action, deviceID)
