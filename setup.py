@@ -388,7 +388,6 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
     elif action == "SetCurrentSceneCollection":
         updatesceneCollectionList()
         scenecollection = printArraySelect(sceneCollectionList)
-        print(scenecollection)
         action = jsonArchive["SetCurrentSceneCollection"] % scenecollection
         saveButtonToFile(msgType, NoC, "button" , action, deviceID)
     elif action == "ResetSceneItem":
@@ -468,7 +467,6 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
             for line in filters:
                 tempFilterList.append(line["name"])
             selectedFilter = printArraySelect(tempFilterList)
-            print(selectedFilter)
             action = jsonArchive["EnableSourceFilter"] % (source, selectedFilter)
             saveButtonToFile(msgType, NoC, "button" , action, deviceID)
         else:
@@ -490,7 +488,6 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
             for line in filters:
                 tempFilterList.append(line["name"])
             selectedFilter = printArraySelect(tempFilterList)
-            print(selectedFilter)
             action = jsonArchive["DisableSourceFilter"] % (source, selectedFilter)
             saveButtonToFile(msgType, NoC, "button" , action, deviceID)
         else:
