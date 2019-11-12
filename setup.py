@@ -13,7 +13,7 @@ devdb = database.table("devices", cache_size=0)
 buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "SetCurrentTransition", "SetSourceVisibility", "ToggleSourceVisibility", "ToggleMute", "SetMute",
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
-                 "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot"]
+                 "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter"]
 faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
@@ -47,6 +47,8 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "ReloadBrowserSource": """{"request-type": "SetBrowserSourceProperties", "message-id" : "1", "source": "%s", "url": "%s"}""",
                "TakeSourceScreenshot": """{"request-type": "TakeSourceScreenshot", "message-id" : "MIDItoOBSscreenshot","sourceName" : "%s", "embedPictureFormat": "png"}""",
                "SetGainFilter": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"db": %s}}""",
+               "EnableSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": true, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
+               "DisableSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": false, "message-id": "MIDItoOBS-DisableSourceFilter"}""",
                "PauseRecording": """{"request-type": "PauseRecording", "message-id" : "MIDItoOBS-PauseRecording"}""",
                "ResumeRecording": """{"request-type": "ResumeRecording", "message-id" : "MIDItoOBS-ResumeRecording"}"""}
 
@@ -449,6 +451,50 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
         source = printArraySelect(tempSceneList)
         action = jsonArchive["TakeSourceScreenshot"] % (source)
         saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+    elif action == "EnableSourceFilter":
+        updateSceneList()
+        updateSpecialSources()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        for item in specialSourcesList:
+            tempSceneList.append(item)
+        source = printArraySelect(tempSceneList)
+        filters = getSourceFilters(source)
+        if filters:
+            tempFilterList = []
+            for line in filters:
+                tempFilterList.append(line["name"])
+            selectedFilter = printArraySelect(tempFilterList)
+            print(selectedFilter)
+            action = jsonArchive["EnableSourceFilter"] % (source, selectedFilter)
+            saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+        else:
+            print("\nThis source has no filters")
+    elif action == "DisableSourceFilter":
+        updateSceneList()
+        updateSpecialSources()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        for item in specialSourcesList:
+            tempSceneList.append(item)
+        source = printArraySelect(tempSceneList)
+        filters = getSourceFilters(source)
+        if filters:
+            tempFilterList = []
+            for line in filters:
+                tempFilterList.append(line["name"])
+            selectedFilter = printArraySelect(tempFilterList)
+            print(selectedFilter)
+            action = jsonArchive["DisableSourceFilter"] % (source, selectedFilter)
+            saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+        else:
+            print("\nThis source has no filters")
 
         
 def saveFaderToFile(msg_type, msgNoC, input_type, action, scale, cmd, deviceID):
@@ -486,7 +532,10 @@ def printArraySelect(array):
     for line in array:
         print("%s: %s" % (counter, line))
         counter += 1
-    return array[int(input("Select 0-%s: " % str(len(array)-1)))]
+    if counter > 1:
+        return array[int(input("Select 0-%s: " % str(len(array)-1)))]
+    else:
+        return array[int(input("Select 0: "))]
 
 def askForInputScaling():
     print("Setup input scale")
@@ -592,6 +641,18 @@ def checkIfSourceHasGainFilter(sourcename):
             if line["type"] == "gain_filter":
                 return line["name"]
     return False
+
+def getSourceFilters(sourcename):
+    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    print("\nChecking source filters, plase wait")
+    ws.send('{"request-type": "GetSourceFilters", "message-id": "MIDItoOBS-getSourceFilters", "sourceName": "' + sourcename + '"}')
+    result =  ws.recv()
+    ws.close()
+    jsn = json.loads(result)
+    if jsn["message-id"] == "MIDItoOBS-getSourceFilters":
+        return jsn["filters"]
+    else:
+        return False
     
 
 def configureDevices(switch):

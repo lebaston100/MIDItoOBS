@@ -74,6 +74,8 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetBrowserSourceURL: Sets the url of a BrowserSource
   - ReloadBrowserSource: Reloads a BrowserSource
   - TakeSourceScreenshot: Don't be fooled by the name; Takes a screenshot of the selected source or complete scene and saves it inside the MIDItoOBS folder as a png image
+  - EnableSourceFilter: Enables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
+  - DisableSourceFilter: Disables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
   
 - Available for faders
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
