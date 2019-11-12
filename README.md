@@ -163,7 +163,8 @@ Special thanks to:
 - obs-studio 24.0.3
 - obs-websocket 4.7.0
 - KORG nanoPAD
+- KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike)
 - Hercules DJ Control MP3
-- Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad))
+- Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad)
 
 Let me know if you had success with your device.
