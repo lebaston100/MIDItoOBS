@@ -64,6 +64,8 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - StartReplayBuffer: Starts the replay buffer
   - StopReplayBuffer: Stops the replay buffer
   - SaveReplayBuffer: Save the replay buffer
+  - PauseRecording: Pauses the recording
+  - ResumeRecording: Resume the recording that was previously paused
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms) to a predefined value
   - SetCurrentProfile: Changes to the selected obs profile
   - SetCurrentSceneCollection: Changes to the selected obs scene collection
@@ -155,8 +157,8 @@ Special thanks to:
 
 - Win 10 Build 18362
 - Python 3.7.0:1bf9cc5093
-- obs-studio 23.2.1
-- obs-websocket 4.6.1
+- obs-studio 24.0.3
+- obs-websocket 4.7.0
 - KORG nanoPAD
 - Hercules DJ Control MP3
 - Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad))
