@@ -13,7 +13,7 @@ devdb = database.table("devices", cache_size=0)
 buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "SetCurrentTransition", "SetSourceVisibility", "ToggleSourceVisibility", "ToggleMute", "SetMute",
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
-                 "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter"]
+                 "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter"]
 faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
@@ -50,7 +50,8 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "EnableSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": true, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
                "DisableSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": false, "message-id": "MIDItoOBS-DisableSourceFilter"}""",
                "PauseRecording": """{"request-type": "PauseRecording", "message-id" : "MIDItoOBS-PauseRecording"}""",
-               "ResumeRecording": """{"request-type": "ResumeRecording", "message-id" : "MIDItoOBS-ResumeRecording"}"""}
+               "ResumeRecording": """{"request-type": "ResumeRecording", "message-id" : "MIDItoOBS-ResumeRecording"}""",
+               "ToggleSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": %s, "message-id": "MIDItoOBS-EnableSourceFilter"}"""}
 
 sceneListShort = []
 sceneListLong = []
@@ -339,7 +340,7 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
         if scene != "--Current--":
             source = source + '", "scene": "' + scene
         action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", source1, deviceID)
+        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceVisibility", source1, "" , deviceID)
     elif action == "ToggleMute":
         updateSceneList()
         updateSpecialSources()
@@ -437,7 +438,7 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
                     tempSceneList.append(line["name"])
         source = printArraySelect(tempSceneList)
         action = jsonArchive["ReloadBrowserSource"] % (source, "%s")
-        saveTODOButtonToFile(msgType, NoC, "button" , action, "ReloadBrowserSource", source, deviceID)
+        saveTODOButtonToFile(msgType, NoC, "button" , action, "ReloadBrowserSource", source, "", deviceID)
     elif action == "TakeSourceScreenshot":
         updateSceneList()
         tempSceneList = []
@@ -492,6 +493,25 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
             saveButtonToFile(msgType, NoC, "button" , action, deviceID)
         else:
             print("\nThis source has no filters")
+    elif action == "ToggleSourceFilter":
+        updateSceneList()
+        updateSpecialSources()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        for item in specialSourcesList:
+            tempSceneList.append(item)
+        source = printArraySelect(tempSceneList)
+        filters = getSourceFilters(source)
+        if filters:
+            tempFilterList = []
+            for line in filters:
+                tempFilterList.append(line["name"])
+            selectedFilter = printArraySelect(tempFilterList)
+        action = jsonArchive["ToggleSourceFilter"] % (source, selectedFilter, "%s")
+        saveTODOButtonToFile(msgType, NoC, "button" , action, "ToggleSourceFilter", source, selectedFilter, deviceID)
 
         
 def saveFaderToFile(msg_type, msgNoC, input_type, action, scale, cmd, deviceID):
@@ -514,15 +534,15 @@ def saveButtonToFile(msg_type, msgNoC, input_type, action, deviceID):
     else:
         db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "deviceID": deviceID})
 
-def saveTODOButtonToFile(msg_type, msgNoC, input_type, action, request, target, deviceID):
+def saveTODOButtonToFile(msg_type, msgNoC, input_type, action, request, target, field2, deviceID):
     print("Saved %s with note/control %s for action %s on device %s" % (msg_type, msgNoC, action, deviceID))
     Search = Query()
     result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
     if result:
         db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID})
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2})
     else:
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID})
+        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2})
 
 def printArraySelect(array):
     counter = 0

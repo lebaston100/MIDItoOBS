@@ -17,6 +17,12 @@ TEMPLATES = {
   "request-type": "GetSourceSettings",
   "message-id": "%d",
   "sourceName": "%s"
+}""",
+"ToggleSourceFilter": """{
+  "request-type": "GetSourceFilterInfo",
+  "message-id": "%d",
+  "sourceName": "%s",
+  "filterName": "%s"
 }"""
 }
 
@@ -198,6 +204,9 @@ class MidiHandler:
                 source = payload["sourceSettings"]["url"]
                 target = source[0:-1] if source[-1] == '#' else source + '#'
                 self.obs_socket.send(template % target)
+            elif kind == "ToggleSourceFilter":
+                invisible = "false" if payload["enabled"] else "true"
+                self.obs_socket.send(template % invisible)             
 
             self.log.debug("Removing action with message id %s from buffer" % message_id)
             self._action_buffer.remove(action)
@@ -253,8 +262,15 @@ class MidiHandler:
             # Keep searching
             return False
 
+        field2 = action_request.get("field2")
+        if not field2:
+            field2 = False
+
         self._action_buffer.append([self._action_counter, action, request])
-        self.obs_socket.send(template % (self._action_counter, target))
+        if field2:
+            self.obs_socket.send(template % (self._action_counter, target, field2))
+        else:
+            self.obs_socket.send(template % (self._action_counter, target))
         self._action_counter += 1
 
         # Explicit return is necessary here to avoid extra searching
