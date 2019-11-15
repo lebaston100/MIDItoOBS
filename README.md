@@ -12,7 +12,7 @@ This script let's you use one or multiple MIDI controller like the Novation Laun
   - [mido](https://github.com/olemb/mido)
   - [python-rtmidi](https://pypi.python.org/pypi/python-rtmidi)
   - [websocket-client](https://github.com/websocket-client/websocket-client)
-- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.6.1)
+- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.7.0)
   
 ## Setup Part 1
 
