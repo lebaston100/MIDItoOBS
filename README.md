@@ -142,7 +142,7 @@ You can assign unlimited different actions to the same button. This requires edi
 A user has reported that under certain circumstances the script(setup and main) will crash after start on Windows with "ImportError: DLL load failed: The specified module could not be found".
 If this happens to you, plase install the Visual C++ Redistributable from Microsoft. Make sure you get the x86 version if you are using python 32bit(Which is default) ([Download](https://aka.ms/vs/15/release/vc_redist.x86.exe))
 
-If you have any other problem, just open a Github issue or DM me @lebaston100 (Twitter/Instagram)
+If you have any other problem, just open a Github issue, join my [Discord Server](https://discord.gg/PCYQJwX) or DM me @lebaston100 (Twitter/Instagram)
 
 ## Contributors
 
