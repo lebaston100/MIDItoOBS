@@ -60,8 +60,8 @@ class DeviceHandler:
             self._port = mido.open_input(name=self._devicename, callback=self.callback)
         except:
             self.log.critical("\nCould not open", self._devicename)
-            self.log.critical("The midi device is used by another application, isnot connected or has a different name.")
-            self.log.critical("Please plug the device in or run setup.py again and restart this script\n")
+            self.log.critical("The midi device might be used by another application/not plugged in/have a different name.")
+            self.log.critical("Please close the device in the other application/plug it in/select the rename option in the device management menu and restart this script.\n")
             # EIO 5 (Input/output error)
             exit(5)
         

@@ -675,15 +675,18 @@ def getSourceFilters(sourcename):
 def configureDevices(switch):
     dbresult = devdb.all()
     if switch:
-        print("\nTell me: What do you want to do?\n1: Delete all devices from config and re-add (Warning: this will dereference all button and fader actions(so they will no longer work). This might cause device confusion later.\n2: Remove a single device from the configuration (+ their midi assignments)\n3: Add new device\n4: Skip device configuration (Warning: If no device has been configured before, MIDItoOBS will NOT work)")
+        print("\nTell me: What do you want to do?\n1: Rename a device and transfer their action assignments (because you plugged it into another USB port and windows decided to give the device a new name now)\n2: Delete all devices from config and re-add (Warning: this will dereference all button and fader actions(so they will no longer work). This might cause device confusion later.\n3: Remove a single device from the configuration INCLUDING their midi assignments\n4: Add new device\n5: Skip device configuration (Warning: If no device has been configured before, MIDItoOBS will NOT work)")
         action_select = int(input("Select 1-4: "))
         if action_select == 1:
+            renameDevice()
+            return
+        elif action_select == 2:
             print("Removing all devices from the database....")
             devdb.purge() #purge database table before adding new devices
-        elif action_select == 2:
+        elif action_select == 3:
             removeDevice()
             return
-        elif action_select == 3:
+        elif action_select == 4:
             pass
         else:
             return
@@ -739,6 +742,41 @@ def removeDevice():
         print("As you wish. Deleting now......")
         devdb.remove(doc_ids=[device_select+1])
         db.remove(Query().deviceID == device_select+1)
+
+def renameDevice():
+    devices = devdb.all()
+    counter = 0
+    print("Please select a device for your configuration that you want to \"rename\" to another device:")
+    for (index, device) in enumerate(devices):
+        print("%s: %s" % (counter, device["devicename"]))
+        counter += 1
+    old_device_select = int(input("Select 0-%s: " % str(len(devices)-1)))
+    old_device_name = devices[old_device_select]["devicename"]
+    print("Selected:", old_device_name)
+    print("Please select the new device name now:")
+    availableDeviceList = mido.get_input_names()
+    deviceList = []
+    for device in availableDeviceList:
+            if devInDB(device, devices):
+                pass
+            else:
+                deviceList.append(device)
+    if len(deviceList) > 0:
+        counter = 0
+        for (index, device) in enumerate(deviceList):
+            print("%s: %s" % (counter, device))
+            counter += 1
+        new_device_select = int(input("Select 0-%s: " % str(len(deviceList)-1)))
+        new_device_name = deviceList[new_device_select]
+        print("Selected:", new_device_name, "as the new device name")
+        print("Updating \"", old_device_name, "\" to \"", new_device_name, "\" now", sep="")
+        try:
+            devdb.update({"devicename": new_device_name}, Query().devicename == old_device_name)
+            print("Sucessfully renamed the device")
+        except:
+            print("There was an error renaming the device")
+    else:
+        print("There is no other device available to switch over to. Aborting...")
         
 def mainLoop():
     global ignore
@@ -800,8 +838,8 @@ if __name__ == "__main__":
             midiports.append(tempobj)
         except:
             print("\nCould not open", device["devicename"])
-            print("The midi device might be used by another application.")
-            print("Please close the device in the other application and restart this script.\n")
+            print("The midi device might be used by another application/not plugged in/have a different name.")
+            print("Please close the device in the other application/plug it in/select the rename option in the device management menu and restart this script.\n")
             database.close()
             sys.exit(5)
 

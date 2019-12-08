@@ -1,5 +1,5 @@
 # Midi OBS what???
-This script let's you use one or multiple MIDI controller like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to switch scenes, start/stop recording/streaming, control volume/gain/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
+This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/gain/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
 **Important**: If you are upgrading from a version that you downloaded before Sep 14. 2019, your old configuration file is no longer usable and you have to re-create the entire mapping!! This is because of the new multi-device feature. (If this is a huge problem for you let me know and i'll tell you the steps to migrate the configuration by hand)
 
@@ -95,10 +95,11 @@ For a detailed description of most of the commands see the [obs-websocket protoc
 If you run the setup another time after the inital configuration you will get a dialog at startup where you can select if you want to go to the device management (1) or just continue adding new button/fader assignments with the already configured devices.
 
 If you select 1 you have a few options:
-- 1: Delete all devices from the database without removing their mapping. This does exactly that and be warned, will cause a device mixup when you add more devices later. You'll be better of using option 2
-- 2: Remove a single device and their assignments.
-- 3: Add a new device. This allows you do add more devices.
-- 4: Skip device configuration. This exits the device management without changing anything and continues with the assignment dialog.
+- 1: Move the assignments from one device over to another. This can help when you plug the controller into another USB port and then shows up under a different name (e.g. "Devicename 1" instead of "Devicename")
+- 2: Delete all devices from the database without removing their mapping. This does exactly that and be warned, will cause a device mixup when you add more devices later. You'll be better of using option 3
+- 3: Remove a single device and their assignments.
+- 4: Add a new device. This allows you do add more devices.
+- 5: Skip device configuration. This exits the device management without changing anything and continues with the assignment dialog.
   
 ### Understanding input scaling
 
@@ -110,13 +111,21 @@ The first value you have to enter(lower output value) is the value that will be 
 
 Some limitations might apply to the range you can use (see the comments above in the action list above).
 
-## Sidenotes:
+## Updating MIDItoOBS
 
-- You can change the IP and Port by modifying the main.py(line 5/6) and setup.py(line 6/7) with a text editor if the script is running on another PC on the network. 
+As MIDItoOBS is just running from the folder move/download it into, updating the programm itself is (most of the time) as easy as downloading it again like mentioned in Setup Part 3.
+
+I highly recommend that you do not overwrite you existing files but rather backup the folder as is (including the config.json) and start with the freshly downloaded files in a new folder. Then just copy your config.json from the old backup folder into the new folder. Then try to run it.
+
+It can and will happen from time-to-time that i introduce some changes that make the config now longer work with the new program version. As i don't have a changelog yet (which is definitely on the todo list) there is not really any way for you to know. Sometimes i announce such changes on the very top of this readme file. If it no longer works feel free to open an issue or contact me (See Troubleshooting).
+
+## Running MIDItoOBS on another computer in the network:
+
+- You can change the IP and Port of the device running obs and obs-websocket by modifying the main.py(line 5/6) and setup.py(line 6/7) with a text editor. You might have to create some firewall exceptions for the websocket port on the device running obs-websocket.
 
 ## Setting up "macros" (optional):
 
-You can assign unlimited different actions to the same button. This requires editing the config. (Sounds harder then it is)
+You can assign unlimited different actions to the same button. There is no guided GUI way to do this right now so this requires editing the config. (Sounds harder then it is)
 
  - Setup the functions as described above on different buttons
  - Now stop the setup.py and open the config(config.json) with a text editor.
