@@ -736,12 +736,17 @@ def removeDevice():
         print("%s: %s" % (counter, device["devicename"]))
         counter += 1
     device_select = int(input("Select 0-%s: " % str(len(devices)-1)))
-    print("Selected:", devices[device_select])
+    print("Selected:", devices[device_select]["devicename"])
     yousure = input("Are you really sure you want to remove the devices and all it's assignments?\nType 'YES' and press enter: ")
     if yousure == "YES":
         print("As you wish. Deleting now......")
-        devdb.remove(doc_ids=[device_select+1])
-        db.remove(Query().deviceID == device_select+1)
+        try:
+            result = devdb.get(Query().devicename == devices[device_select]["devicename"])
+            devdb.remove(doc_ids=[result.doc_id])
+            db.remove(Query().deviceID == result.doc_id)
+        except:
+            print("There was an error removing the device")
+        
 
 def renameDevice():
     devices = devdb.all()
