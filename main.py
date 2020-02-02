@@ -32,7 +32,7 @@ def map_scale(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
 
 def get_logger(name, level=logging.INFO):
-    log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) %(message)s')
+    log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) %(thread)d : %(message)s')
 
     std_output = logging.StreamHandler(stdout)
     std_output.setFormatter(log_format)
@@ -113,7 +113,7 @@ class MidiHandler:
         self.obs_socket.on_open = self.handle_obs_open
 
     def handle_midi_input(self, message, deviceID, deviceName):
-        self.log.debug("Received", message, "from device", deviceID, "/", deviceName)
+        self.log.debug("Received %s %s %s %s %s", str(message), "from device", deviceID, "/", deviceName)
 
         if message.type == "note_on":
             return self.handle_midi_button(deviceID, message.type, message.note)
