@@ -84,8 +84,8 @@ class MidiHandler:
 
         self.log.debug("Trying to load config file  from %s" % config_path)
         self.database = TinyDB(config_path, indent=4)
-        self.db = self.database.table("keys", cache_size=0)
-        self.devdb = self.database.table("devices", cache_size=0)
+        self.db = self.database.table("keys", cache_size=100)
+        self.devdb = self.database.table("devices", cache_size=20)
         
         result = self.devdb.all()
         if not result:
