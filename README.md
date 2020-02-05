@@ -12,6 +12,7 @@ This script let's you use one or multiple MIDI controller (like the Novation Lau
   - [mido](https://github.com/olemb/mido)
   - [python-rtmidi](https://pypi.python.org/pypi/python-rtmidi)
   - [websocket-client](https://github.com/websocket-client/websocket-client)
+  - [dbj](https://github.com/pdrb/dbj)
 - The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.7.0)
   
 ## Setup Part 1
@@ -22,6 +23,7 @@ This script let's you use one or multiple MIDI controller (like the Novation Lau
 - For instructions how to install TinyDB click [here](https://tinydb.readthedocs.io/en/latest/getting-started.html#installing-tinydb)
 - For instructions how to install mido and python-rtmidi click [here](https://github.com/olemb/mido#installing)
 - For instructions how to install websocket-client click [here](https://github.com/websocket-client/websocket-client#installation)
+- For instructions how to install dbj click [here](https://github.com/pdrb/dbj#install)
 
 If you want to install all packages in one go, run "pip install -r requirements.txt"
 
@@ -33,7 +35,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
 
 ## Setup Part 3
 
-- [Download the repository](https://github.com/lebaston100/MIDItoOBS/archive/master.zip) or clone it
+- [Download the latest Release](https://github.com/lebaston100/MIDItoOBS/releases) or clone it if you want to test the bleeding edge features and bugfixes
 - Connect your MIDI controller
 - Launch obs-studio
 - Launch the setup.py (Try double click or the "Run Setup.bat" if you are on Windows)
@@ -113,7 +115,7 @@ Some limitations might apply to the range you can use (see the comments above in
 
 ## Updating MIDItoOBS
 
-As MIDItoOBS is just running from the folder move/download it into, updating the programm itself is (most of the time) as easy as downloading it again like mentioned in Setup Part 3.
+As MIDItoOBS is just running from the folder you move/download it into, updating the programm itself is (most of the time) as easy as downloading it again like mentioned in Setup Part 3.
 
 I highly recommend that you do not overwrite you existing files but rather backup the folder as is (including the config.json) and start with the freshly downloaded files in a new folder. Then just copy your config.json from the old backup folder into the new folder. Then try to run it.
 

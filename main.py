@@ -1,11 +1,16 @@
 from __future__ import division
 from websocket import WebSocketApp
-from tinydb import TinyDB, Query
+from tinydb import TinyDB
 from sys import exit, stdout
 from os import path
 from time import time
 
 import logging, json, mido, base64
+
+try:
+   from dbj import dbj
+except ImportError:
+   print("Could not import dbj. Please install it using 'pip install dbj'")
 
 TEMPLATES = {
 "ToggleSourceVisibility": """{
@@ -32,7 +37,7 @@ def map_scale(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
 
 def get_logger(name, level=logging.INFO):
-    log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) %(thread)d : %(message)s')
+    log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) T%(thread)d : %(message)s')
 
     std_output = logging.StreamHandler(stdout)
     std_output.setFormatter(log_format)
@@ -82,12 +87,34 @@ class MidiHandler:
         self._action_counter = 2
         self._portobjects = []
 
+        #load tinydb configuration database
         self.log.debug("Trying to load config file  from %s" % config_path)
-        self.database = TinyDB(config_path, indent=4)
-        self.db = self.database.table("keys", cache_size=100)
-        self.devdb = self.database.table("devices", cache_size=20)
+        tiny_database = TinyDB(config_path, indent=4)
+        tiny_db = tiny_database.table("keys", cache_size=20)
+        tiny_devdb = tiny_database.table("devices", cache_size=20)
+
+        #get all mappings and devices
+        self._mappings = tiny_db.all()
+        self._devices = tiny_devdb.all()
+
+        #open dbj datebase for mapping and clear
+        self.mappingdb = dbj("temp-mappingdb.json")
+        self.mappingdb.clear()
+
+        #convert database to dbj in-memory
+        for _mapping in self._mappings:
+            self.mappingdb.insert(_mapping)
+
+        self.log.debug("Mapping database: `%s`" % str(self.mappingdb.getall()))
+
+        if len(self.mappingdb.getall()) < 1:
+            self.log.critical("Could not cache device mappings")
+            # ENOENT (No such file or directory)
+            exit(2)
+
+        self.log.debug("Successfully imported mapping database")
         
-        result = self.devdb.all()
+        result = tiny_devdb.all()
         if not result:
             self.log.critical("Config file %s doesn't exist or is damaged" % config_path)
             # ENOENT (No such file or directory)
@@ -100,11 +127,13 @@ class MidiHandler:
         for device in result:
             self._portobjects.append(DeviceHandler(device, device.doc_id))
 
-        del result
-
         self.log.info("Successfully initialized midi port(s)")
+        del result
+        
+        # close tinydb
+        tiny_database.close()
 
-        # Properly setting up a Websocket client
+        # setting up a Websocket client
         self.log.debug("Attempting to connect to OBS using websocket protocol")
         self.obs_socket = WebSocketApp("ws://%s:%d" % (ws_server, ws_port))
         self.obs_socket.on_message = self.handle_obs_message
@@ -128,8 +157,7 @@ class MidiHandler:
 
 
     def handle_midi_button(self, deviceID, type, note):
-        query = Query()
-        results = self.db.search((query.msg_type == type) & (query.msgNoC == note) & (query.deviceID == deviceID))
+        results = self.mappingdb.getmany(self.mappingdb.find('msg_type == "%s" and msgNoC == %s and deviceID == %s' % (type, note, deviceID)))
 
         if not results:
             self.log.debug("Cound not find action for note %s", note)
@@ -140,8 +168,7 @@ class MidiHandler:
                 pass
 
     def handle_midi_fader(self, deviceID, control, value):
-        query = Query()
-        results = self.db.search((query.msg_type == "control_change") & (query.msgNoC == control) & (query.deviceID == deviceID))
+        results = self.mappingdb.getmany(self.mappingdb.find('msg_type == "control_change" and msgNoC == %s and deviceID == %s' % (control, deviceID)))
 
         if not results:
             self.log.debug("Cound not find action for fader %s", control)
@@ -178,7 +205,7 @@ class MidiHandler:
         self.log.debug("Received new message from OBS")
         payload = json.loads(message)
 
-        self.log.debug("Successfully parsed new message from OBS")
+        self.log.debug("Successfully parsed new message from OBS: %s" % message)
 
         if "error" in payload:
             self.log.error("OBS returned error: %s" % payload["error"])
@@ -295,9 +322,6 @@ class MidiHandler:
             self.obs_socket.close()
 
             self.log.info("OBS connection has been closed successfully")
-
-        self.log.debug("Attempting to close TinyDB instance on config file")
-        self.db.close()
 
         self.log.info("Config file has been successfully released")
 
