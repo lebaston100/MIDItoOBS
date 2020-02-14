@@ -368,9 +368,9 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
         tempArray = ["0 (Muted)", "1 (Unmuted)"]
         muted = printArraySelect(tempArray)
         if muted == "0 (Muted)":
-            muted = "false"
-        else:
             muted = "true"
+        else:
+            muted = "false"
         action = jsonArchive["SetMute"] % (source, muted)
         saveButtonToFile(msgType, NoC, "button" , action, deviceID)
     elif action == "SetTransitionDuration":
