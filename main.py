@@ -227,39 +227,64 @@ class MidiHandler:
             self.log.error("OBS returned error: %s" % payload["error"])
             return
 
-        message_id = payload["message-id"]
+        if "message-id" in payload:
+            message_id = payload["message-id"]
 
-        self.log.debug("Looking for action with message id `%s`" % message_id)
-        for action in self._action_buffer:
-            (buffered_id, template, kind) = action
+            self.log.debug("Looking for action with message id `%s`" % message_id)
+            for action in self._action_buffer:
+                (buffered_id, template, kind) = action
 
-            if buffered_id != int(payload["message-id"]):
+                if buffered_id != int(payload["message-id"]):
+                    continue
+
+                del buffered_id
+                self.log.info("Action `%s` was requested by OBS" % kind)
+
+                if kind == "ToggleSourceVisibility":
+                    # Dear lain, I so miss decent ternary operators...
+                    invisible = "false" if payload["visible"] else "true"
+                    self.obs_socket.send(template % invisible)
+                elif kind == "ReloadBrowserSource":
+                    source = payload["sourceSettings"]["url"]
+                    target = source[0:-1] if source[-1] == '#' else source + '#'
+                    self.obs_socket.send(template % target)
+                elif kind == "ToggleSourceFilter":
+                    invisible = "false" if payload["enabled"] else "true"
+                    self.obs_socket.send(template % invisible)
+                elif kind in ["SetCurrentScene", "SetPreviewScene"]:
+                    self.sceneChanged(kind, payload["name"])
+
+                self.log.debug("Removing action with message id %s from buffer" % message_id)
+                self._action_buffer.remove(action)
+                break
+
+            if message_id == "MIDItoOBSscreenshot":
+                if payload["status"] == "ok":
+                    with open(str(time()) + ".png", "wb") as fh:
+                        fh.write(base64.decodebytes(payload["img"][22:].encode()))
+
+        elif "update-type" in payload:
+            update_type = payload["update-type"]
+
+            request_types = {"PreviewSceneChanged": "SetPreviewScene", "SwitchScenes": "SetCurrentScene"}
+            if update_type in request_types:
+                scene_name = payload["scene-name"]
+                self.sceneChanged(request_types[update_type], scene_name)
+
+    def sceneChanged(self, event_type, scene_name):
+        self.log.debug("Scene changed, event: %s, name: %s" % (event_type, scene_name))
+        # only buttons can change the scene, so we can limit our search to those
+        results = self.mappingdb.getmany(self.mappingdb.find('input_type == "button" and bidirectional == 1'))
+        if not results:
+            return
+        for result in results:
+            j = json.loads(result["action"])
+            if j["request-type"] != event_type:
                 continue
-
-            del buffered_id
-            self.log.info("Action `%s` was requested by OBS" % kind)
-
-            if kind == "ToggleSourceVisibility":
-                # Dear lain, I so miss decent ternary operators...
-                invisible = "false" if payload["visible"] else "true"
-                self.obs_socket.send(template % invisible)
-            elif kind == "ReloadBrowserSource":
-                source = payload["sourceSettings"]["url"]
-                target = source[0:-1] if source[-1] == '#' else source + '#'
-                self.obs_socket.send(template % target)
-            elif kind == "ToggleSourceFilter":
-                invisible = "false" if payload["enabled"] else "true"
-                self.obs_socket.send(template % invisible)             
-
-            self.log.debug("Removing action with message id %s from buffer" % message_id)
-            self._action_buffer.remove(action)
-            break
-        
-        if message_id == "MIDItoOBSscreenshot":
-            if payload["status"] == "ok":
-                with open(str(time()) + ".png", "wb") as fh:
-                    fh.write(base64.decodebytes(payload["img"][22:].encode()))
-                
+            value = 127 if j["scene-name"] == scene_name else 0
+            portobject = self.getPortObjectFromDeviceID(result["deviceID"])
+            if portobject:
+                portobject._port.send(mido.Message(result["msg_type"], channel=0, control=result["msgNoC"], value=value))
 
     def handle_obs_error(self, ws, error=None):
         # Protection against potential inconsistencies in `inspect.ismethod`
