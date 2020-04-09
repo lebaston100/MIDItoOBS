@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from __future__ import division
 from websocket import WebSocketApp
 from tinydb import TinyDB
@@ -136,10 +137,10 @@ class MidiHandler:
         # setting up a Websocket client
         self.log.debug("Attempting to connect to OBS using websocket protocol")
         self.obs_socket = WebSocketApp("ws://%s:%d" % (ws_server, ws_port))
-        self.obs_socket.on_message = self.handle_obs_message
-        self.obs_socket.on_error = self.handle_obs_error
-        self.obs_socket.on_close = self.handle_obs_close
-        self.obs_socket.on_open = self.handle_obs_open
+        self.obs_socket.on_message = lambda ws, message: self.handle_obs_message(ws, message)
+        self.obs_socket.on_error = lambda ws, error: self.handle_obs_error(ws, error)
+        self.obs_socket.on_close = lambda ws: self.handle_obs_close(ws)
+        self.obs_socket.on_open = lambda ws: self.handle_obs_open(ws)
 
     def handle_midi_input(self, message, deviceID, deviceName):
         self.log.debug("Received %s %s %s %s %s", str(message), "from device", deviceID, "/", deviceName)
@@ -201,7 +202,7 @@ class MidiHandler:
                 if command == "SetSourceRotation" or command == "SetTransitionDuration" or command == "SetSyncOffset" or command == "SetSourcePosition":
                     self.obs_socket.send(action % int(scaled))
 
-    def handle_obs_message(self, message):
+    def handle_obs_message(self, ws, message):
         self.log.debug("Received new message from OBS")
         payload = json.loads(message)
 
@@ -259,6 +260,7 @@ class MidiHandler:
     def handle_obs_close(self, ws):
         self.log.error("OBS has disconnected, timed out or isn't running")
         self.log.error("Please reopen OBS and restart the script")
+        self.close(teardown=False)
 
     def handle_obs_open(self, ws):
         self.log.info("Successfully connected to OBS")
