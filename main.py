@@ -29,6 +29,16 @@ TEMPLATES = {
   "message-id": "%d",
   "sourceName": "%s",
   "filterName": "%s"
+}""",
+"SetCurrentScene": """{
+  "request-type": "GetCurrentScene",
+  "message-id": "%d",
+  "_unused": "%s"
+}""",
+"SetPreviewScene": """{
+  "request-type": "GetPreviewScene",
+  "message-id": "%d",
+  "_unused": "%s"
 }"""
 }
 
@@ -63,7 +73,7 @@ class DeviceHandler:
 
         try:
             self.log.debug("Attempting to open midi port `%s`" % self._devicename)
-            self._port = mido.open_input(name=self._devicename, callback=self.callback)
+            self._port = mido.open_ioport(name=self._devicename, callback=self.callback, autoreset=True)
         except:
             self.log.critical("\nCould not open", self._devicename)
             self.log.critical("The midi device might be used by another application/not plugged in/have a different name.")
@@ -126,7 +136,7 @@ class MidiHandler:
         self.log.debug("Retrieved MIDI port name(s) `%s`" % result)
         #create new class with handler and open from there, just create new instances
         for device in result:
-            self._portobjects.append(DeviceHandler(device, device.doc_id))
+            self._portobjects.append((DeviceHandler(device, device.doc_id), device.doc_id))
 
         self.log.info("Successfully initialized midi port(s)")
         del result
@@ -141,6 +151,11 @@ class MidiHandler:
         self.obs_socket.on_error = lambda ws, error: self.handle_obs_error(ws, error)
         self.obs_socket.on_close = lambda ws: self.handle_obs_close(ws)
         self.obs_socket.on_open = lambda ws: self.handle_obs_open(ws)
+
+    def getPortObjectFromDeviceID(self, deviceID):
+        for portobject, _deviceID in self._portobjects:
+            if _deviceID == deviceID:
+                return portobject
 
     def handle_midi_input(self, message, deviceID, deviceName):
         self.log.debug("Received %s %s %s %s %s", str(message), "from device", deviceID, "/", deviceName)
@@ -265,6 +280,10 @@ class MidiHandler:
     def handle_obs_open(self, ws):
         self.log.info("Successfully connected to OBS")
 
+        # initialize bidirectional controls
+        self.send_action({"action": 'GetCurrentScene', "request": "SetCurrentScene", "target": ":-)"})
+        self.send_action({"action": 'GetPreviewScene', "request": "SetPreviewScene", "target": ":-)"})
+
     def send_action(self, action_request):
         action = action_request.get("action")
         if not action:
@@ -310,6 +329,15 @@ class MidiHandler:
         self.obs_socket.run_forever()
 
     def close(self, teardown=False):
+        # set bidirectional controls to their 0 state (i.e., turn off LEDs)
+        self.log.debug("Attempting to turn off bidirectional controls")
+        result = self.mappingdb.getmany(self.mappingdb.find('bidirectional == 1'))
+        if result:
+            for row in result:
+                portobject = self.getPortObjectFromDeviceID(row["deviceID"])
+                if portobject:
+                    portobject._port.send(mido.Message(row["msg_type"], channel=0, control=row["msgNoC"], value=0))
+
         self.log.debug("Attempting to close midi port(s)")
         result = self.devdb.all()
         for device in result:
