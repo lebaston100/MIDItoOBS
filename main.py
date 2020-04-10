@@ -73,11 +73,17 @@ class DeviceHandler:
 
         try:
             self.log.debug("Attempting to open midi port `%s`" % self._devicename)
-            self._port = mido.open_ioport(name=self._devicename, callback=self.callback, autoreset=True)
+            if self._devicename in mido.get_ioport_names():
+                self._port = mido.open_ioport(name=self._devicename, callback=self.callback, autoreset=True)
+            else:
+                self._port = mido.open_input(name=self._devicename, callback=self.callback)
         except:
             self.log.critical("\nCould not open", self._devicename)
             self.log.critical("The midi device might be used by another application/not plugged in/have a different name.")
-            self.log.critical("Please close the device in the other application/plug it in/select the rename option in the device management menu and restart this script.\n")
+            self.log.critical("Please close the device in the other application/plug it in/select the rename option in the device management menu and restart this script.")
+            self.log.critical("Currently connected devices:")
+            for name in mido.get_input_names():
+                self.log.critical("  - %s" % name)
             # EIO 5 (Input/output error)
             exit(5)
         
@@ -283,7 +289,7 @@ class MidiHandler:
                 continue
             value = 127 if j["scene-name"] == scene_name else 0
             portobject = self.getPortObjectFromDeviceID(result["deviceID"])
-            if portobject:
+            if portobject and portobject._port.is_output:
                 portobject._port.send(mido.Message(result["msg_type"], channel=0, control=result["msgNoC"], value=value))
 
     def handle_obs_error(self, ws, error=None):
@@ -360,7 +366,7 @@ class MidiHandler:
         if result:
             for row in result:
                 portobject = self.getPortObjectFromDeviceID(row["deviceID"])
-                if portobject:
+                if portobject and portobject._port.is_output:
                     portobject._port.send(mido.Message(row["msg_type"], channel=0, control=row["msgNoC"], value=0))
 
         self.log.debug("Attempting to close midi port(s)")
