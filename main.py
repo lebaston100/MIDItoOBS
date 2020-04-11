@@ -299,14 +299,13 @@ class MidiHandler:
 
         if isinstance(error, (KeyboardInterrupt, SystemExit)):
             self.log.info("Keyboard interrupt received, gracefully exiting...")
-            self.close(teardown=True)
         else:
             self.log.error("Websocket error: %" % str(error))
 
     def handle_obs_close(self, ws):
         self.log.error("OBS has disconnected, timed out or isn't running")
         self.log.error("Please reopen OBS and restart the script")
-        self.close(teardown=False)
+        self.close(teardown=True)
 
     def handle_obs_open(self, ws):
         self.log.info("Successfully connected to OBS")
