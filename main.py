@@ -69,14 +69,22 @@ class DeviceHandler:
         self.log = get_logger("midi_to_obs_device")
         self._id = deviceid
         self._devicename = device["devicename"]
-        self._port = 0
+        self._port_in = 0
+        self._port_out = 0
 
         try:
             self.log.debug("Attempting to open midi port `%s`" % self._devicename)
+            # a device can be input, output or ioport. in the latter case it can also be the other two
+            # so we first check if we can use it as an ioport
             if self._devicename in mido.get_ioport_names():
-                self._port = mido.open_ioport(name=self._devicename, callback=self.callback, autoreset=True)
+                self._port_in = mido.open_ioport(name=self._devicename, callback=self.callback, autoreset=True)
+                self._port_out = self._port_in
+            # otherwise we try to use it separately as input and output
             else:
-                self._port = mido.open_input(name=self._devicename, callback=self.callback)
+                if self._devicename in mido.get_input_names():
+                    self._port_in = mido.open_input(name=self._devicename, callback=self.callback)
+                if self._devicename in mido.get_output_names():
+                    self._port_out = mido.open_output(name=self._devicename, callback=self.callback, autoreset=True)
         except:
             self.log.critical("\nCould not open", self._devicename)
             self.log.critical("The midi device might be used by another application/not plugged in/have a different name.")
@@ -91,7 +99,13 @@ class DeviceHandler:
         handler.handle_midi_input(msg, self._id, self._devicename)
 
     def close(self):
-        self._port_close()
+        if self._port_in:
+            self._port_in.close()
+        # when it's an ioport we don't want to close the port twice
+        if self._port_out and self._port_out != self._port_in:
+            self._port_out.close()
+        self._port_in = 0
+        self._port_out = 0
 
 class MidiHandler:
     # Initializes the handler class
@@ -158,7 +172,8 @@ class MidiHandler:
         self.obs_socket.on_close = lambda ws: self.handle_obs_close(ws)
         self.obs_socket.on_open = lambda ws: self.handle_obs_open(ws)
 
-    def getPortObjectFromDeviceID(self, deviceID):
+    def getPortObject(self, mapping):
+        deviceID = mapping.get("out_deviceID", mapping["deviceID"])
         for portobject, _deviceID in self._portobjects:
             if _deviceID == deviceID:
                 return portobject
@@ -288,9 +303,9 @@ class MidiHandler:
             if j["request-type"] != event_type:
                 continue
             value = 127 if j["scene-name"] == scene_name else 0
-            portobject = self.getPortObjectFromDeviceID(result["deviceID"])
-            if portobject and portobject._port.is_output:
-                portobject._port.send(mido.Message(result["msg_type"], channel=0, control=result["msgNoC"], value=value))
+            portobject = self.getPortObject(result)
+            if portobject and portobject._port_out:
+                portobject._port_out.send(mido.Message(result["msg_type"], channel=0, control=result["msgNoC"], value=value))
 
     def handle_obs_error(self, ws, error=None):
         # Protection against potential inconsistencies in `inspect.ismethod`
@@ -364,14 +379,13 @@ class MidiHandler:
         result = self.mappingdb.getmany(self.mappingdb.find('bidirectional == 1'))
         if result:
             for row in result:
-                portobject = self.getPortObjectFromDeviceID(row["deviceID"])
-                if portobject and portobject._port.is_output:
-                    portobject._port.send(mido.Message(row["msg_type"], channel=0, control=row["msgNoC"], value=0))
+                portobject = self.getPortObject(row)
+                if portobject and portobject._port_out:
+                    portobject._port_out.send(mido.Message(row["msg_type"], channel=0, control=row["msgNoC"], value=0))
 
         self.log.debug("Attempting to close midi port(s)")
-        result = self.devdb.all()
-        for device in result:
-            device.close()
+        for portobject, _ in self._portobjects:
+              portobject.close()
 
         self.log.info("Midi connection has been closed successfully")
 
