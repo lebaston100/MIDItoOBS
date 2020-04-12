@@ -302,14 +302,15 @@ class MidiHandler:
             j = json.loads(result["action"])
             if j["request-type"] != event_type:
                 continue
+            msgNoC = result.get("out_msgNoC", result["msgNoC"])
             portobject = self.getPortObject(result)
             if portobject and portobject._port_out:
                 if result["msg_type"] == "control_change":
                     value = 127 if j["scene-name"] == scene_name else 0
-                    portobject._port_out.send(mido.Message(type="control_change", channel=0, control=result["msgNoC"], value=value))
+                    portobject._port_out.send(mido.Message(type="control_change", channel=0, control=msgNoC, value=value))
                 elif result["msg_type"] == "note_on":
                     velocity = 1 if j["scene-name"] == scene_name else 0
-                    portobject._port_out.send(mido.Message(type="note_on", channel=0, note=result["msgNoC"], velocity=velocity))
+                    portobject._port_out.send(mido.Message(type="note_on", channel=0, note=msgNoC, velocity=velocity))
 
     def handle_obs_error(self, ws, error=None):
         # Protection against potential inconsistencies in `inspect.ismethod`
@@ -383,12 +384,13 @@ class MidiHandler:
         result = self.mappingdb.getmany(self.mappingdb.find('bidirectional == 1'))
         if result:
             for row in result:
+                msgNoC = row.get("out_msgNoC", row["msgNoC"])
                 portobject = self.getPortObject(row)
                 if portobject and portobject._port_out:
                     if row["msg_type"] == "control_change":
-                        portobject._port_out.send(mido.Message(type="control_change", channel=0, control=row["msgNoC"], value=0))
+                        portobject._port_out.send(mido.Message(type="control_change", channel=0, control=msgNoC, value=0))
                     elif row["msg_type"] == "note_on":
-                        portobject._port_out.send(mido.Message(type="note_on", channel=0, note=row["msgNoC"], velocity=0))
+                        portobject._port_out.send(mido.Message(type="note_on", channel=0, note=msgNoC, velocity=0))
 
         self.log.debug("Attempting to close midi port(s)")
         for portobject, _ in self._portobjects:
