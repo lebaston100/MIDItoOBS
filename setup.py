@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import mido, threading, sys, atexit, json, time, signal
 from tinydb import TinyDB, Query
 from websocket import create_connection
@@ -247,13 +248,15 @@ def setupButtonEvents(action, NoC, msgType, deviceID):
     if action == "SetCurrentScene":
         updateSceneList()
         scene = printArraySelect(sceneListShort)
+        bidirectional = askForBidirectional()
         action = jsonArchive["SetCurrentScene"] % scene
-        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID, bidirectional)
     elif action == "SetPreviewScene":
         updateSceneList()
         scene = printArraySelect(sceneListShort)
+        bidirectional = askForBidirectional()
         action = jsonArchive["SetPreviewScene"] % scene
-        saveButtonToFile(msgType, NoC, "button" , action, deviceID)
+        saveButtonToFile(msgType, NoC, "button" , action, deviceID, bidirectional)
     elif action == "TransitionToProgram":
         updateTransitionList()
         print("Please select a transition to be used:")
@@ -524,15 +527,13 @@ def saveFaderToFile(msg_type, msgNoC, input_type, action, scale, cmd, deviceID):
     else:
         db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "scale_low": scale[0], "scale_high": scale[1], "action": action, "cmd": cmd, "deviceID": deviceID})
 
-def saveButtonToFile(msg_type, msgNoC, input_type, action, deviceID):
-    print("Saved %s with note/control %s for action %s on device %s" % (msg_type, msgNoC, action, deviceID))
+def saveButtonToFile(msg_type, msgNoC, input_type, action, deviceID, bidirectional=False):
+    print("Saved %s with note/control %s for action %s on device %s, bidirectional: %d" % (msg_type, msgNoC, action, deviceID, bidirectional))
     Search = Query()
     result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
     if result:
         db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID))
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "deviceID": deviceID})
-    else:
-        db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "deviceID": deviceID})
+    db.insert({"msg_type": msg_type, "msgNoC": msgNoC, "input_type": input_type, "action" : action, "deviceID": deviceID, "bidirectional": bidirectional})
 
 def saveTODOButtonToFile(msg_type, msgNoC, input_type, action, request, target, field2, deviceID):
     print("Saved %s with note/control %s for action %s on device %s" % (msg_type, msgNoC, action, deviceID))
@@ -559,6 +560,11 @@ def askForInputScaling():
     low = int(input("Select lower output value: "))
     high = int(input("Select higher output value: "))
     return low, high
+
+def askForBidirectional():
+    print("Do you want the control to be bidirectional?\n1: Yes\n2: No")
+    bidirectional = int(input("Select 1 or 2: "))
+    return bidirectional == 1
 
 def updateTransitionList():
     global transitionList
