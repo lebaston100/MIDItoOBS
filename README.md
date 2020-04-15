@@ -1,7 +1,7 @@
 # Midi OBS what???
 This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/gain/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
-**Important**: If you are upgrading from a version that you downloaded before Sep 14. 2019, your old configuration file is no longer usable and you have to re-create the entire mapping!! This is because of the new multi-device feature. (If this is a huge problem for you let me know and i'll tell you the steps to migrate the configuration by hand)
+The latest (not yet released as a release) version adds experimental support for outputting midi back to the controller to light up buttons that are used to switch scenes.
 
 ## Requirements
 
@@ -113,6 +113,18 @@ The first value you have to enter(lower output value) is the value that will be 
 
 Some limitations might apply to the range you can use (see the comments above in the action list above).
 
+### "Bidirectional mode" !!ADVANCED/EXPERIMENTAL!!
+
+THIS IS ONLY FOR ADVANCED USERS THAT ARE COMFORTABLE EDIGING CONFIG FILES
+
+If you enable the "bidirectional" mode while setting up SetCurrentScene or SetPreviewScene the script will try to open the input device as an output device and listen for Preview or Program scene change events. It will then send out a note_on or control_change event on midi channel 0 to the same note or control channel that is setup for the specific scene.
+
+This default approach might not work for some devices like the X-Touch Mini that have different notes/cc values for the same button depending if the data is coming in or going out. In this case you have to add a value named "out_msgNoC" to the config.json file for the button you want to light up with the right note/cc number.
+
+If the midi out port for your device has a differnt name then the input port this will also not work without modifying the config.json file. For that first use the device configuration as mentioned above to add another device (could be one with a completly differnt name, this only saves you the work of manually adding the whole device which you could also do). Then add a value called "out_deviceID" to the button mapping entry with the value set to the id of the output device you just created. Also make sure that the output device name is the right one.
+
+If you want to know more take a look at [the original pull request](https://github.com/lebaston100/MIDItoOBS/pull/19)
+
 ## Updating MIDItoOBS
 
 As MIDItoOBS is just running from the folder you move/download it into, updating the programm itself is (most of the time) as easy as downloading it again like mentioned in Setup Part 3.
@@ -148,12 +160,12 @@ You can assign unlimited different actions to the same button. There is no guide
 - Now just leave it running in the background
 - To stop the program simply close the window (or CTRL + C)
 
-## Troubleshooting
+## Troubleshooting/Support
 
 A user has reported that under certain circumstances the script(setup and main) will crash after start on Windows with "ImportError: DLL load failed: The specified module could not be found".
 If this happens to you, plase install the Visual C++ Redistributable from Microsoft. Make sure you get the x86 version if you are using python 32bit(Which is default) ([Download](https://aka.ms/vs/15/release/vc_redist.x86.exe))
 
-If you have any other problem, just open a Github issue, join my [Discord Server](https://discord.gg/PCYQJwX) or DM me @lebaston100 (Twitter/Instagram)
+If you have any other problem, just open a Github issue or join my [Discord Server](https://discord.gg/PCYQJwX)
 
 ## Contributors
 
@@ -165,16 +177,17 @@ Special thanks to:
 - [Alex-Dash](https://github.com/Alex-Dash) (make the volume control linear)
 - [imcrazytwkr](https://github.com/imcrazytwkr) (completly refactoring the main.py)
 - [juliscrazy](https://github.com/juliscrazy) (fix typo in readme)
+- [houz](https://github.com/houz) (midi feedback back to the controller)
 
 
 ### Tested on/with:
 
-- Win 10 Build 18363
+- Win 10 1909
 - Python 3.8.1:1b293b6
-- obs-studio 24.0.3
+- obs-studio 25.0.4
 - obs-websocket 4.7.0
 - KORG nanoPAD
-- KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike))
+- KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike)) and [houz](https://github.com/houz)
 - Behringer FCB-1010 + ESI MidiMate eX (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike))
 - Hercules DJ Control MP3
 - Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad))
