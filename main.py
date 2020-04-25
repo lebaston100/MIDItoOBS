@@ -182,19 +182,19 @@ class MidiHandler:
         self.log.debug("Received %s %s %s %s %s", str(message), "from device", deviceID, "/", deviceName)
 
         if message.type == "note_on":
-            return self.handle_midi_button(deviceID, message.type, message.note)
+            return self.handle_midi_button(deviceID, message.channel, message.type, message.note)
 
         # `program_change` messages can be only used as regular buttons since
         # they have no extra value, unlike faders (`control_change`)
         if message.type == "program_change":
-            return self.handle_midi_button(deviceID, message.type, message.program)
+            return self.handle_midi_button(deviceID, message.channel, message.type, message.program)
 
         if message.type == "control_change":
-            return self.handle_midi_fader(deviceID, message.control, message.value)
+            return self.handle_midi_fader(deviceID, message.channel, message.control, message.value)
 
 
-    def handle_midi_button(self, deviceID, type, note):
-        results = self.mappingdb.getmany(self.mappingdb.find('msg_type == "%s" and msgNoC == %s and deviceID == %s' % (type, note, deviceID)))
+    def handle_midi_button(self, deviceID, channel, type, note):
+        results = self.mappingdb.getmany(self.mappingdb.find('msg_channel == %s and msg_type == "%s" and msgNoC == %s and deviceID == %s' % (channel, type, note, deviceID)))
 
         if not results:
             self.log.debug("Cound not find action for note %s", note)
@@ -204,8 +204,8 @@ class MidiHandler:
             if self.send_action(result):
                 pass
 
-    def handle_midi_fader(self, deviceID, control, value):
-        results = self.mappingdb.getmany(self.mappingdb.find('msg_type == "control_change" and msgNoC == %s and deviceID == %s' % (control, deviceID)))
+    def handle_midi_fader(self, deviceID, channel, control, value):
+        results = self.mappingdb.getmany(self.mappingdb.find('msg_channel == %s and msg_type == "control_change" and msgNoC == %s and deviceID == %s' % (channel, control, deviceID)))
 
         if not results:
             self.log.debug("Cound not find action for fader %s", control)
