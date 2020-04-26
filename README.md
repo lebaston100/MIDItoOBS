@@ -1,5 +1,5 @@
 # Midi OBS what???
-This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/gain/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
+This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/gain/opacity/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
 The latest (not yet released as a release) version adds experimental support for outputting midi back to the controller to light up buttons that are used to switch scenes.
 
@@ -80,7 +80,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - DisableSourceFilter: Disables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
   - ToggleSourceFilter: Toggles the status of a filter on a source for each button press
   
-- Available for faders
+- Available for faders/knobs
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
   - SetSyncOffset: Sets the sync offset of a source(in ns)
   - SetSourcePosition: Sets the x or y position of a source (in px)
@@ -88,6 +88,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetSourceScale: Sets the scale for x/y or both of a source (For the scaling 1 = original scale)
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms)
   - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid range you can work in). This will automatically default to the first gain filter found in a source!
+  - SetOpacity: This controls the opacity of a source or scene by using the "Color Correction" filter in obs. To use add a "Color Correction" filter to the source you want it on and rename the filter to "miditoobs-opacity". Then it will be correctly detected in the setup.
 - Now you can either setup another button/fader by repeating the steps above(except starting the script again) or just close the window to exit the configuration
   
 For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)

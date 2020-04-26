@@ -15,7 +15,7 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter"]
-faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter"]
+faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
                "TransitionToProgram": """{"request-type": "TransitionToProgram", "message-id" : "1"%s}""",
@@ -52,7 +52,8 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "DisableSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": false, "message-id": "MIDItoOBS-DisableSourceFilter"}""",
                "PauseRecording": """{"request-type": "PauseRecording", "message-id" : "MIDItoOBS-PauseRecording"}""",
                "ResumeRecording": """{"request-type": "ResumeRecording", "message-id" : "MIDItoOBS-ResumeRecording"}""",
-               "ToggleSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": %s, "message-id": "MIDItoOBS-EnableSourceFilter"}"""}
+               "ToggleSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": %s, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
+               "SetOpacity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"opacity": %s}}"""}
 
 sceneListShort = []
 sceneListLong = []
@@ -241,6 +242,20 @@ def setupFaderEvents(action, channel, NoC, msgType, deviceID):
             saveFaderToFile(channel, msgType, NoC, "fader" , action, scale, "SetGainFilter", deviceID)
         else:
             print("The selected source has no gain filter. Please add it in the source filter dialog and try again.")
+    elif action == "SetOpacity": #TODO
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filtername = checkIfSourceHasColorCorrectionFilter(source)
+        if filtername:
+            action = jsonArchive["SetOpacity"] % (source, filtername, "%s")
+            saveFaderToFile(channel, msgType, NoC, "fader" , action, [0, 100], "SetOpacity", deviceID)
+        else:
+            print("The selected source has no Color Correction filter. Please add it in the source filter dialog and try again.")
         
 def setupButtonEvents(action, channel, NoC, msgType, deviceID):
     print()
@@ -662,6 +677,19 @@ def checkIfSourceHasGainFilter(sourcename):
     if jsn["message-id"] == "MIDItoOBS-checksourcegainfilter":
         for line in jsn["filters"]:
             if line["type"] == "gain_filter":
+                return line["name"]
+    return False
+
+def checkIfSourceHasColorCorrectionFilter(sourcename):
+    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    print("\nChecking source filters, plase wait")
+    ws.send('{"request-type": "GetSourceFilters", "message-id": "MIDItoOBS-checksourcecolorcorrectionfilter", "sourceName": "' + sourcename + '"}')
+    result =  ws.recv()
+    ws.close()
+    jsn = json.loads(result)
+    if jsn["message-id"] == "MIDItoOBS-checksourcecolorcorrectionfilter":
+        for line in jsn["filters"]:
+            if line["type"] == "color_filter" and line["name"] == "miditoobs-opacity":
                 return line["name"]
     return False
 

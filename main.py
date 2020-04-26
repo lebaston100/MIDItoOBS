@@ -232,7 +232,7 @@ class MidiHandler:
                     # Yes, this literally raises a float to a third degree
                     self.obs_socket.send(action % scaled**3)
 
-                if command == "SetGainFilter":
+                if command == "SetGainFilter" or command == "SetOpacity":
                     self.obs_socket.send(action % scaled)
 
                 if command == "SetSourceRotation" or command == "SetTransitionDuration" or command == "SetSyncOffset" or command == "SetSourcePosition":
