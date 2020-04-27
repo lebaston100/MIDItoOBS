@@ -116,7 +116,7 @@ Some limitations might apply to the range you can use (see the comments above in
 
 ### "Bidirectional mode" !!ADVANCED/EXPERIMENTAL!!
 
-THIS IS ONLY FOR ADVANCED USERS THAT ARE COMFORTABLE EDIGING CONFIG FILES
+THIS IS ONLY FOR ADVANCED USERS THAT ARE COMFORTABLE EDITING CONFIG FILES
 
 If you enable the "bidirectional" mode while setting up SetCurrentScene or SetPreviewScene the script will try to open the input device as an output device and listen for Preview or Program scene change events. It will then send out a note_on or control_change event on midi channel 0 to the same note or control channel that is setup for the specific scene.
 
@@ -188,11 +188,12 @@ Special thanks to:
 - obs-studio 25.0.4
 - obs-websocket 4.7.0
 - KORG nanoPAD
-- KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike)) and [houz](https://github.com/houz)
+- KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike) and [houz](https://github.com/houz))
 - Behringer FCB-1010 + ESI MidiMate eX (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike))
 - Hercules DJ Control MP3
 - Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad))
 - Arturia MiniLab MKII (tested by [moops44](https://github.com/moops44)). See [Issue #17](https://github.com/lebaston100/MIDItoOBS/issues/17) for notes!
 - Native Instruments Maschine Mk3 (tested by [moops44](https://github.com/moops44)). See [Issue #18](https://github.com/lebaston100/MIDItoOBS/issues/18) for notes!
+- Novation LaunchControl XL (tested by [lannonbr](https://github.com/lannonbr))
 
 Let me know if you had success with your device.
