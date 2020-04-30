@@ -44,7 +44,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "SetSourceRotation": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "rotation": %s}""",
                "SetSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
                "ToggleSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
-               "SetSourceScale": """{{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "scale": {{"%s": %s}}}}""",
+               "SetSourceScale": """{{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "scale": {{"%s": %s%s}}}}""",
                "ReloadBrowserSource": """{"request-type": "SetBrowserSourceProperties", "message-id" : "1", "source": "%s", "url": "%s"}""",
                "TakeSourceScreenshot": """{"request-type": "TakeSourceScreenshot", "message-id" : "MIDItoOBSscreenshot","sourceName" : "%s", "embedPictureFormat": "png"}""",
                "SetGainFilter": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"db": %s}}""",
@@ -64,6 +64,12 @@ sceneCollectionList = []
 gdisourcesList = []
 
 midiports = []
+
+OBS_ALIGN_CENTER = (0)
+OBS_ALIGN_LEFT = (1 << 0)
+OBS_ALIGN_RIGHT = (1 << 1)
+OBS_ALIGN_TOP = (1 << 2)
+OBS_ALIGN_BOTTOM = (1 << 3)
 
 ignore = 255
 savetime1 = time.time()
@@ -221,8 +227,22 @@ def setupFaderEvents(action, channel, NoC, msgType, deviceID):
         target = int(input("\n0: X\n1: Y\n2: Both\nSelect Target to change (0-2): "))
         if target in range(0, 3):
             scale = askForInputScaling()
-            action = jsonArchive["SetSourceScale"] % (selected["scene"], selected["source"], tempTargetList[target], "{0}")
-            saveFaderToFile(channel, msgType, NoC, "fader" , action, scale, "SetSourceScale", deviceID)
+            alignmentlist = ["NONE", "Top Left", "Top Center", "Top Right", "Center Left", "Center", "Center Right", "Bottom Left", "Bottom Center", "Bottom Right"]
+            alignmentvaluelist = ["NONE", OBS_ALIGN_TOP | OBS_ALIGN_LEFT, OBS_ALIGN_TOP | OBS_ALIGN_CENTER, OBS_ALIGN_TOP | OBS_ALIGN_RIGHT,
+                                  OBS_ALIGN_CENTER | OBS_ALIGN_LEFT, OBS_ALIGN_CENTER | OBS_ALIGN_CENTER, OBS_ALIGN_CENTER | OBS_ALIGN_RIGHT,
+                                  OBS_ALIGN_BOTTOM | OBS_ALIGN_LEFT, OBS_ALIGN_BOTTOM | OBS_ALIGN_CENTER, OBS_ALIGN_BOTTOM | OBS_ALIGN_RIGHT]
+            counter = 0
+            print()
+            for line in alignmentlist:
+                print("%s: %s" % (counter, line))
+                counter += 1
+            alignment = int(input("Select source alignment (0-{}): ".format(len(alignmentlist)-1)))
+            if alignment in range(0, len(alignmentlist)-1):
+                alignmentplaceholder = ""
+                if type(alignmentvaluelist[alignment]) == int:
+                    alignmentplaceholder = '}}, "position": {{"alignment": %d' % alignmentvaluelist[alignment]
+                action = jsonArchive["SetSourceScale"] % (selected["scene"], selected["source"], tempTargetList[target], "{0}", alignmentplaceholder)
+                saveFaderToFile(channel, msgType, NoC, "fader" , action, scale, "SetSourceScale", deviceID)
     elif action == "SetGainFilter":
         updateSceneList()
         updateSpecialSources()
@@ -242,7 +262,7 @@ def setupFaderEvents(action, channel, NoC, msgType, deviceID):
             saveFaderToFile(channel, msgType, NoC, "fader" , action, scale, "SetGainFilter", deviceID)
         else:
             print("The selected source has no gain filter. Please add it in the source filter dialog and try again.")
-    elif action == "SetOpacity": #TODO
+    elif action == "SetOpacity":
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:

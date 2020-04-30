@@ -85,7 +85,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetSyncOffset: Sets the sync offset of a source(in ns)
   - SetSourcePosition: Sets the x or y position of a source (in px)
   - SetSourceRotation: Sets the rotation of a source (in degree)
-  - SetSourceScale: Sets the scale for x/y or both of a source (For the scaling 1 = original scale)
+  - SetSourceScale: Sets the scale for x/y OR both of a source (For the scaling 1 = original scale). You can also select around which position the source will be scaled(align).
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms)
   - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid range you can work in). This will automatically default to the first gain filter found in a source!
   - SetOpacity: This controls the opacity of a source or scene by using the "Color Correction" filter in obs. To use add a "Color Correction" filter to the source you want it on and rename the filter to "miditoobs-opacity". Then it will be correctly detected in the setup.
