@@ -47,7 +47,7 @@ SCRIPT_DIR = path.dirname(path.realpath(__file__))
 def map_scale(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
 
-def get_logger(name, level=logging.INFO):
+def get_logger(name, level=logging.DEBUG):
     log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) T%(thread)d : %(message)s')
 
     std_output = logging.StreamHandler(stdout)
@@ -286,11 +286,34 @@ class MidiHandler:
 
         elif "update-type" in payload:
             update_type = payload["update-type"]
-
+            self.log.debug(update_type)
             request_types = {"PreviewSceneChanged": "SetPreviewScene", "SwitchScenes": "SetCurrentScene"}
             if update_type in request_types:
                 scene_name = payload["scene-name"]
                 self.sceneChanged(request_types[update_type], scene_name)
+            elif update_type == "SourceVolumeChanged":
+                self.volChanged(payload["sourceName"],payload["volume"])
+    def volChanged(self, source_name, volume):
+        self.log.info("Volume "+source_name+" changed to val: "+str(volume))
+        results = self.mappingdb.getmany(self.mappingdb.find('input_type == "fader" and bidirectional == 1'))
+        if not results:
+            self.log.info("no fader results")
+            return
+        for result in results:
+
+
+            j=result["action"]%"0"
+            k=json.loads(j)["source"]
+            self.log.info(k)
+            if k == source_name:
+                val = map_scale(volume, result["scale_low"], result["scale_high"], 0, 127)
+                self.log.info(val)
+
+                msgNoC = result.get("out_msgNoC", result["msgNoC"])
+                self.log.info(msgNoC)
+                portobject = self.getPortObject(result)
+                if portobject and portobject._port_out:
+                    portobject._port_out.send(mido.Message('control_change', channel=0, control=int(result["msgNoC"]), value=int(val)))
 
     def sceneChanged(self, event_type, scene_name):
         self.log.debug("Scene changed, event: %s, name: %s" % (event_type, scene_name))
