@@ -121,6 +121,7 @@ THIS IS ONLY FOR ADVANCED USERS THAT ARE COMFORTABLE EDITING CONFIG FILES
 If you enable the "bidirectional" mode while setting up SetCurrentScene or SetPreviewScene the script will try to open the input device as an output device and listen for Preview or Program scene change events. It will then send out a note_on or control_change event on midi channel 0 to the same note or control channel that is setup for the specific scene.
 
 This default approach might not work for some devices like the X-Touch Mini that have different notes/cc values for the same button depending if the data is coming in or going out. In this case you have to add a value named "out_msgNoC" to the config.json file for the button you want to light up with the right note/cc number.
+To change the default channel you need to add a value named "out_channel" to config.json file.
 
 If the midi out port for your device has a differnt name then the input port this will also not work without modifying the config.json file. For that first use the device configuration as mentioned above to add another device (could be one with a completly differnt name, this only saves you the work of manually adding the whole device which you could also do). Then add a value called "out_deviceID" to the button mapping entry with the value set to the id of the output device you just created. Also make sure that the output device name is the right one.
 
