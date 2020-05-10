@@ -47,7 +47,7 @@ SCRIPT_DIR = path.dirname(path.realpath(__file__))
 def map_scale(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
 
-def get_logger(name, level=logging.INFO):
+def get_logger(name, level=logging.DEBUG):
     log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) T%(thread)d : %(message)s')
 
     std_output = logging.StreamHandler(stdout)
@@ -118,6 +118,9 @@ class MidiHandler:
         self._action_counter = 2
         self._portobjects = []
 
+        # Feedback blocking
+        self.blockcount=0
+        self.block = False
         #load tinydb configuration database
         self.log.debug("Trying to load config file  from %s" % config_path)
         tiny_database = TinyDB(config_path, indent=4)
@@ -210,33 +213,39 @@ class MidiHandler:
         if not results:
             self.log.debug("Cound not find action for fader %s", control)
             return
+        if self.block == True:
+            if self.blockcount <=4:
+                self.log.debug("Blocked incoming message due to sending message")
+                self.block=False
+                self.blockcount+=1
+        else:
+            self.blockcount=0
+            for result in results:
+                input_type = result["input_type"]
+                action = result["action"]
 
-        for result in results:
-            input_type = result["input_type"]
-            action = result["action"]
+                if input_type == "button":
+                    if value == 127 and not self.send_action(result):
+                        continue
 
-            if input_type == "button":
-                if value == 127 and not self.send_action(result):
-                    continue
+                if input_type == "fader":
+                    command = result["cmd"]
+                    scaled = map_scale(value, 0, 127, result["scale_low"], result["scale_high"])
 
-            if input_type == "fader":
-                command = result["cmd"]
-                scaled = map_scale(value, 0, 127, result["scale_low"], result["scale_high"])
+                    if command == "SetSourceScale":
+                        self.obs_socket.send(action.format(scaled))
 
-                if command == "SetSourceScale":
-                    self.obs_socket.send(action.format(scaled))
+                    # Super dirty hack but @AlexDash says that it works
+                    # @TODO: find an explanation _why_ it works
+                    if command == "SetVolume":
+                        # Yes, this literally raises a float to a third degree
+                        self.obs_socket.send(action % scaled**3)
 
-                # Super dirty hack but @AlexDash says that it works
-                # @TODO: find an explanation _why_ it works
-                if command == "SetVolume":
-                    # Yes, this literally raises a float to a third degree
-                    self.obs_socket.send(action % scaled**3)
+                    if command == "SetGainFilter" or command == "SetOpacity":
+                        self.obs_socket.send(action % scaled)
 
-                if command == "SetGainFilter" or command == "SetOpacity":
-                    self.obs_socket.send(action % scaled)
-
-                if command == "SetSourceRotation" or command == "SetTransitionDuration" or command == "SetSyncOffset" or command == "SetSourcePosition":
-                    self.obs_socket.send(action % int(scaled))
+                    if command == "SetSourceRotation" or command == "SetTransitionDuration" or command == "SetSyncOffset" or command == "SetSourcePosition":
+                        self.obs_socket.send(action % int(scaled))
 
     def handle_obs_message(self, ws, message):
         self.log.debug("Received new message from OBS")
@@ -286,11 +295,36 @@ class MidiHandler:
 
         elif "update-type" in payload:
             update_type = payload["update-type"]
-
+            self.log.debug(update_type)
             request_types = {"PreviewSceneChanged": "SetPreviewScene", "SwitchScenes": "SetCurrentScene"}
             if update_type in request_types:
                 scene_name = payload["scene-name"]
                 self.sceneChanged(request_types[update_type], scene_name)
+            elif update_type == "SourceVolumeChanged":
+                self.volChanged(payload["sourceName"],payload["volume"])
+    def volChanged(self, source_name, volume):
+        self.log.info("Volume "+source_name+" changed to val: "+str(volume))
+        results = self.mappingdb.getmany(self.mappingdb.find('input_type == "fader" and bidirectional == 1'))
+        if not results:
+            self.log.info("no fader results")
+            return
+        for result in results:
+
+
+            j=result["action"]%"0"
+            k=json.loads(j)["source"]
+            self.log.info(k)
+            if k == source_name:
+                val = int(map_scale(volume, result["scale_low"], result["scale_high"], 0, 127))
+                self.log.info(val)
+
+                msgNoC = result.get("out_msgNoC", result["msgNoC"])
+                self.log.info(msgNoC)
+                portobject = self.getPortObject(result)
+                if portobject and portobject._port_out:
+                    self.block=True
+                    portobject._port_out.send(mido.Message('control_change', channel=0, control=int(result["msgNoC"]), value=val))
+
 
     def sceneChanged(self, event_type, scene_name):
         self.log.debug("Scene changed, event: %s, name: %s" % (event_type, scene_name))
