@@ -922,9 +922,9 @@ if __name__ == "__main__":
             tempobj = {"id": device.doc_id, "object": tempmidiport, "devicename": device["devicename"]}
             midiports.append(tempobj)
         except:
-            print("\nCould not open", device["devicename"])
+            print("\nCould not open device", device["devicename"])
             print("The midi device might be used by another application/not plugged in/have a different name.")
-            print("Please close the device in the other application/plug it in/select the rename option in the device management menu and restart this script.\n")
+            print("Please close the device in the other application/plug it in/edit the name in the config.json and restart this script.\n")
             database.close()
             sys.exit(5)
 

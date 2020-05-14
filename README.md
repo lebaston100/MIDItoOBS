@@ -79,7 +79,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - EnableSourceFilter: Enables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
   - DisableSourceFilter: Disables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
   - ToggleSourceFilter: Toggles the status of a filter on a source for each button press
-  - SetAudioMonitor: Sets the audio monitor option on a source
+  - SetAudioMonitor: Sets the audio monitor option on a source (Requires obs-websocket >= 4.8.0)
   
 - Available for faders/knobs
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
