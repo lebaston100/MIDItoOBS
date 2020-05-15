@@ -569,9 +569,9 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         if typeOfMonitor == "None":
             typeOfMonitor = "none"
         elif typeOfMonitor == "Monitor Only":
-            typeOfMonitor = "monitor_only"
+            typeOfMonitor = "monitorOnly"
         else:
-            typeOfMonitor = "monitor_and_output"
+            typeOfMonitor = "monitorAndOutput"
 
         action = jsonArchive["SetAudioMonitor"] % (source, typeOfMonitor)
 
