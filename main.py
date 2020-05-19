@@ -51,7 +51,8 @@ parser.add_argument('--config',
                     help='Path to config file. Default: ./config.json')
 
 parser.add_argument('--port', 
-                    default=4444, 
+                    default=4444,
+                    type=int,
                     help='Set port. Default: 4444')
 
 parser.add_argument('--host', 
