@@ -45,9 +45,19 @@ TEMPLATES = {
 SCRIPT_DIR = path.dirname(path.realpath(__file__))
 
 parser = argparse.ArgumentParser(description='MIDItoOBS')
-parser.add_argument('--config', default='config.json', help='Path to config file. Default: ./config.json')
-parser.add_argument('--port', default=4444, help='Set port. Default: 4444')
-parser.add_argument('--host', default='localhost', help='Hostname. Default: localhost')
+
+parser.add_argument('--config', 
+                    default='config.json', 
+                    help='Path to config file. Default: ./config.json')
+
+parser.add_argument('--port', 
+                    default=4444, 
+                    help='Set port. Default: 4444')
+
+parser.add_argument('--host', 
+                    default='localhost', 
+                    help='Hostname. Default: localhost')
+
 args = parser.parse_args()
 
 
