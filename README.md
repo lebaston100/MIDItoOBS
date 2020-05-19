@@ -1,7 +1,8 @@
+
 # Midi OBS what???
 This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/gain/opacity/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
-The latest (not yet released as a release) version adds experimental support for outputting midi back to the controller to light up buttons that are used to switch scenes.
+If you want to play it safe, use the latest release. If you want to use the latest features then just clone the master branch.
 
 ## Requirements
 
@@ -79,7 +80,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - EnableSourceFilter: Enables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
   - DisableSourceFilter: Disables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
   - ToggleSourceFilter: Toggles the status of a filter on a source for each button press
-  - SetAudioMonitor: Sets the audio monitor option on a source (Requires obs-websocket >= 4.8.0)
+  - SetAudioMonitor: Sets the audio monitor option on a source (Requires not-yet-released obs-websocket 4.8.0)
   
 - Available for faders/knobs
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
@@ -96,7 +97,7 @@ For a detailed description of most of the commands see the [obs-websocket protoc
 
 ### Device Management
 
-If you run the setup another time after the inital configuration you will get a dialog at startup where you can select if you want to go to the device management (1) or just continue adding new button/fader assignments with the already configured devices.
+If you run the setup another time after the inital configuration you will get a dialog at startup where you can select if you want to go to the device management (1) or just continue adding new button/fader assignments with the already configured devices (2).
 
 If you select 1 you have a few options:
 - 1: Move the assignments from one device over to another. This can help when you plug the controller into another USB port and then shows up under a different name (e.g. "Devicename 1" instead of "Devicename")
@@ -163,6 +164,13 @@ You can assign unlimited different actions to the same button. There is no guide
 - Now just leave it running in the background
 - To stop the program simply close the window (or CTRL + C)
 
+## Command line options
+
+You can call the main.py with the following command line options:
+ - `--config <path/to/config/file.json>` (Default: "config.json")
+ - `--port <obs-websocket port>`(Default: "4444")
+ - `--host <obs-websocket hostname/ip>`(Default: "localhost")
+ 
 ## Troubleshooting/Support
 
 A user has reported that under certain circumstances the script(setup and main) will crash after start on Windows with "ImportError: DLL load failed: The specified module could not be found".
@@ -172,7 +180,7 @@ If you have any other problem, just open a Github issue or join my [Discord Serv
 
 ## Contributors
 
-I had never imagined that so "many" people would contribute something to the project. Thanks to everyone who submitted a bug report or pull request.
+I had never imagined that so many people would contribute something to the project. Thanks to everyone who submitted a bug report or pull request.
 Special thanks to:
 
 - [ptitodd](https://github.com/ptitodd) (Adding program_change message handling)
@@ -181,13 +189,15 @@ Special thanks to:
 - [imcrazytwkr](https://github.com/imcrazytwkr) (completly refactoring the main.py)
 - [juliscrazy](https://github.com/juliscrazy) (fix typo in readme)
 - [houz](https://github.com/houz) (midi feedback back to the controller)
-
+- [cpyarger](https://github.com/cpyarger) (midi feedback for faders)
+- [juandelacruz-calvo](https://github.com/juandelacruz-calvo) (Audio Monitoring command)
+- [jberentsson](https://github.com/jberentsson) (command line options)
 
 ### Tested on/with:
 
 - Win 10 1909
 - Python 3.8.1:1b293b6
-- obs-studio 25.0.4
+- obs-studio 25.0.8
 - obs-websocket 4.7.0
 - KORG nanoPAD
 - KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike) and [houz](https://github.com/houz))
