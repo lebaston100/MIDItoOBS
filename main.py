@@ -6,7 +6,7 @@ from sys import exit, stdout
 from os import path
 from time import time
 
-import logging, json, mido, base64
+import logging, json, mido, base64, argparse
 
 try:
    from dbj import dbj
@@ -43,6 +43,13 @@ TEMPLATES = {
 }
 
 SCRIPT_DIR = path.dirname(path.realpath(__file__))
+
+parser = argparse.ArgumentParser(description='MIDItoOBS')
+parser.add_argument('--config', default='config.json', help='Path to config file. Default: ./config.json')
+parser.add_argument('--port', default=4444, help='Set port. Default: 4444')
+parser.add_argument('--host', default='localhost', help='Hostname. Default: localhost')
+args = parser.parse_args()
+
 
 def map_scale(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
@@ -109,7 +116,7 @@ class DeviceHandler:
 
 class MidiHandler:
     # Initializes the handler class
-    def __init__(self, config_path="config.json", ws_server="localhost", ws_port=4444):
+    def __init__(self, config_path=args.config, ws_server=args.host, ws_port=args.port):
         # Setting up logging first and foremost
         self.log = get_logger("midi_to_obs")
 
