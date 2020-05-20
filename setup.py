@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
-import mido, threading, sys, atexit, json, time, signal
+import mido, threading, sys, atexit, json, time, signal, argparse
 from tinydb import TinyDB, Query
 from websocket import create_connection
 
+parser = argparse.ArgumentParser(description='MIDItoOBS Setup')                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+parser.add_argument('--config',                                                                                                                                                                                                                                               
+                    default='config.json',                                                                                                                                                                                                                                 
+                    help='Path to config file. Default: ./config.json')
+parser.add_argument('--port',
+                    default=4444,
+                    type=int, 
+                    help='Set port. Default: 4444')                                 
+                                                                                                                                                                                                                                                                              
+parser.add_argument('--host',                                                                                                                                                                                                                                                 
+                    default='localhost',                                                                                                                                                                                                                                      
+                    help='Hostname. Default: localhost')                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                              
+args = parser.parse_args()   
+
+
 ####Change IP and Port here
-serverIP = "localhost"
-serverPort = "4444"
+serverIP = args.host
+serverPort = args.port
 ####
 
-database = TinyDB("config.json", indent=4)
+database = TinyDB(args.config, indent=4)
 db = database.table("keys", cache_size=0)
 devdb = database.table("devices", cache_size=0)
 buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "SetCurrentTransition", "SetSourceVisibility", "ToggleSourceVisibility", "ToggleMute", "SetMute",
