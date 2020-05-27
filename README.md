@@ -14,7 +14,7 @@ If you want to play it safe, use the latest release. If you want to use the late
   - [python-rtmidi](https://pypi.python.org/pypi/python-rtmidi)
   - [websocket-client](https://github.com/websocket-client/websocket-client)
   - [dbj](https://github.com/pdrb/dbj)
-- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.7.0)
+- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.8.0)
   
 ## Setup Part 1
 
@@ -80,7 +80,10 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - EnableSourceFilter: Enables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
   - DisableSourceFilter: Disables a filter that is on a source (Works with "Audio Filters" and Video "Effect Filters")
   - ToggleSourceFilter: Toggles the status of a filter on a source for each button press
-  - SetAudioMonitor: Sets the audio monitor option on a source (Requires not-yet-released obs-websocket 4.8.0)
+  - SetAudioMonitor: Sets the audio monitor option on a source
+  - EnableStudioMode: Enables Studio Mode
+  - DisableStudioMode: Disables Studio Mode
+  - ToggleStudioMode: Toggles Studio Mode
   
 - Available for faders/knobs
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
@@ -198,7 +201,7 @@ Special thanks to:
 - Win 10 1909
 - Python 3.8.1:1b293b6
 - obs-studio 25.0.8
-- obs-websocket 4.7.0
+- obs-websocket 4.8.0
 - KORG nanoPAD
 - KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike) and [houz](https://github.com/houz))
 - Behringer FCB-1010 + ESI MidiMate eX (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike))
