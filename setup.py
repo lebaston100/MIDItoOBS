@@ -3,20 +3,22 @@ import mido, threading, sys, atexit, json, time, signal, argparse
 from tinydb import TinyDB, Query
 from websocket import create_connection
 
-parser = argparse.ArgumentParser(description='MIDItoOBS Setup')                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-parser.add_argument('--config',                                                                                                                                                                                                                                               
-                    default='config.json',                                                                                                                                                                                                                                 
+parser = argparse.ArgumentParser(description='MIDItoOBS Config Setup')
+
+parser.add_argument('--config',
+                    default='config.json',
                     help='Path to config file. Default: ./config.json')
+
 parser.add_argument('--port',
                     default=4444,
-                    type=int, 
-                    help='Set port. Default: 4444')                                 
-                                                                                                                                                                                                                                                                              
-parser.add_argument('--host',                                                                                                                                                                                                                                                 
-                    default='localhost',                                                                                                                                                                                                                                      
-                    help='Hostname. Default: localhost')                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                                              
-args = parser.parse_args()   
+                    type=int,
+                    help='Set port. Default: 4444')
+
+parser.add_argument('--host',
+                    default='localhost',
+                    help='Hostname. Default: localhost')
+
+args = parser.parse_args()
 
 
 ####Change IP and Port here
@@ -645,7 +647,7 @@ def askForBidirectional():
 
 def updateTransitionList():
     global transitionList
-    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("\nUpdating transition list, plase wait")
     ws.send("""{"request-type": "GetTransitionList", "message-id": "999999"}""")
     result =  ws.recv()
@@ -662,7 +664,7 @@ def updateTransitionList():
 def updateSceneList():
     global sceneListShort
     global sceneListLong
-    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("\nUpdating scene list, plase wait")
     ws.send("""{"request-type": "GetSceneList", "message-id": "9999999"}""")
     result =  ws.recv()
@@ -680,7 +682,7 @@ def updateSceneList():
 
 def updateSpecialSources():
     global specialSourcesList
-    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("\nUpdating special sources, plase wait")
     ws.send("""{"request-type": "GetSpecialSources", "message-id": "99999999"}""")
     result =  ws.recv()
@@ -699,7 +701,7 @@ def updateSpecialSources():
 
 def updateProfileList():
     global profilesList
-    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("Updating Profiles List, plase wait")
     ws.send("""{"request-type": "ListProfiles", "message-id": "99999999"}""")
     result =  ws.recv()
@@ -715,7 +717,7 @@ def updateProfileList():
 
 def updatesceneCollectionList():
     global sceneCollectionList
-    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("\nUpdating Scene Collection List, plase wait")
     ws.send("""{"request-type": "ListSceneCollections", "message-id": "99999999"}""")
     result =  ws.recv()
@@ -730,7 +732,7 @@ def updatesceneCollectionList():
     ws.close()
 
 def checkIfSourceHasGainFilter(sourcename):
-    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("\nChecking source filters, plase wait")
     ws.send('{"request-type": "GetSourceFilters", "message-id": "MIDItoOBS-checksourcegainfilter", "sourceName": "' + sourcename + '"}')
     result =  ws.recv()
@@ -743,7 +745,7 @@ def checkIfSourceHasGainFilter(sourcename):
     return False
 
 def checkIfSourceHasColorCorrectionFilter(sourcename):
-    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("\nChecking source filters, plase wait")
     ws.send('{"request-type": "GetSourceFilters", "message-id": "MIDItoOBS-checksourcecolorcorrectionfilter", "sourceName": "' + sourcename + '"}')
     result =  ws.recv()
@@ -756,7 +758,7 @@ def checkIfSourceHasColorCorrectionFilter(sourcename):
     return False
 
 def getSourceFilters(sourcename):
-    ws = create_connection("ws://" + serverIP + ":" + serverPort)
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("\nChecking source filters, plase wait")
     ws.send('{"request-type": "GetSourceFilters", "message-id": "MIDItoOBS-getSourceFilters", "sourceName": "' + sourcename + '"}')
     result =  ws.recv()
