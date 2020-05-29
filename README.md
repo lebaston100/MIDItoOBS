@@ -192,7 +192,7 @@ Special thanks to:
 - obs-websocket 4.7.0
 - KORG nanoPAD
 - KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike) and [houz](https://github.com/houz))
-- Kort padKONTROL (tested by [jberentsson](https://twitter.com/jberentsson))
+- Kort padKONTROL (tested by [jberentsson](https://github.com/jberentsson))
 - Behringer FCB-1010 + ESI MidiMate eX (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike))
 - Hercules DJ Control MP3
 - Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad))
