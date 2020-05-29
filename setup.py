@@ -32,7 +32,8 @@ devdb = database.table("devices", cache_size=0)
 buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "SetCurrentTransition", "SetSourceVisibility", "ToggleSourceVisibility", "ToggleMute", "SetMute",
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
-                 "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitor"]
+                 "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitor",
+                 "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode"]
 faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
@@ -72,7 +73,10 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "ResumeRecording": """{"request-type": "ResumeRecording", "message-id" : "MIDItoOBS-ResumeRecording"}""",
                "ToggleSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": %s, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
                "SetOpacity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"opacity": %s}}""",
-               "SetAudioMonitor": """{"request-type": "SetAudioMonitor", "message-id" : "1","sourceName" : "%s", "monitorType": "%s"}"""}
+               "SetAudioMonitor": """{"request-type": "SetAudioMonitor", "message-id" : "1","sourceName" : "%s", "monitorType": "%s"}""",
+               "EnableStudioMode": """{"request-type": "EnableStudioMode", "message-id" : "1"}""",
+               "DisableStudioMode": """{"request-type": "DisableStudioMode", "message-id" : "1"}""",
+               "ToggleStudioMode": """{"request-type": "ToggleStudioMode", "message-id" : "1"}"""}
 
 sceneListShort = []
 sceneListLong = []
@@ -594,6 +598,15 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         action = jsonArchive["SetAudioMonitor"] % (source, typeOfMonitor)
 
         saveButtonToFile(channel, msgType, NoC, VoV, "button", action, deviceID)
+    elif action == "EnableStudioMode":
+        action = jsonArchive["EnableStudioMode"]
+        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
+    elif action == "DisableStudioMode":
+        action = jsonArchive["DisableStudioMode"]
+        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
+    elif action == "ToggleStudioMode":
+        action = jsonArchive["ToggleStudioMode"]
+        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
 
         
 def saveFaderToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, scale, cmd, deviceID):
