@@ -555,7 +555,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
             selectedFilter = printArraySelect(tempFilterList)
         action = jsonArchive["ToggleSourceFilter"] % (source, selectedFilter, "%s")
         saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceFilter", source, selectedFilter, deviceID)
-    elif action == "SetAudioMonitor":
+    elif action == "SetAudioMonitorType":
         updateSceneList()
         updateSpecialSources()
 
@@ -577,7 +577,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         else:
             typeOfMonitor = "monitorAndOutput"
 
-        action = jsonArchive["SetAudioMonitor"] % (source, typeOfMonitor)
+        action = jsonArchive["SetAudioMonitorType"] % (source, typeOfMonitor)
 
         saveButtonToFile(channel, msgType, NoC, VoV, "button", action, deviceID)
     elif action == "EnableStudioMode":
