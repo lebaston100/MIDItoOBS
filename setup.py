@@ -55,7 +55,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "ResumeRecording": """{"request-type": "ResumeRecording", "message-id" : "MIDItoOBS-ResumeRecording"}""",
                "ToggleSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": %s, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
                "SetOpacity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"opacity": %s}}""",
-               "SetAudioMonitor": """{"request-type": "SetAudioMonitor", "message-id" : "1","sourceName" : "%s", "monitorType": "%s"}""",
+               "SetAudioMonitorType": """{"request-type": "SetAudioMonitorType", "message-id" : "1","sourceName" : "%s", "monitorType": "%s"}""",
                "EnableStudioMode": """{"request-type": "EnableStudioMode", "message-id" : "1"}""",
                "DisableStudioMode": """{"request-type": "DisableStudioMode", "message-id" : "1"}""",
                "ToggleStudioMode": """{"request-type": "ToggleStudioMode", "message-id" : "1"}"""}
