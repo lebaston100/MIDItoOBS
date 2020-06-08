@@ -280,7 +280,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
             action = jsonArchive["SetOpacity"] % (source, filtername, "%s")
             saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, [0, 100], "SetOpacity", deviceID)
         else:
-            print("The selected source has no Color Correction filter. Please add it in the source filter dialog and try again.")
+            print("The selected source has no Color Correction filter with the name 'miditoobs-opacity'. Please add it in the source filter dialog and try again.")
     
 def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
     print()
