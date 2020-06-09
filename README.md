@@ -199,11 +199,13 @@ Special thanks to:
 ### Tested on/with:
 
 - Win 10 1909
+- Ubuntu 18.04
 - Python 3.8.1:1b293b6
 - obs-studio 25.0.8
 - obs-websocket 4.8.0
 - KORG nanoPAD
 - KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike) and [houz](https://github.com/houz))
+- KORG padKONTROL (tested by [jberentsson](https://github.com/jberentsson))
 - Behringer FCB-1010 + ESI MidiMate eX (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike))
 - Hercules DJ Control MP3
 - Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad))
