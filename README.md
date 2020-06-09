@@ -169,7 +169,7 @@ You can assign unlimited different actions to the same button. There is no guide
 
 ## Command line options
 
-You can call the main.py with the following command line options:
+You can call the main.py and the setup.py with the following command line options:
  - `--config <path/to/config/file.json>` (Default: "config.json")
  - `--port <obs-websocket port>`(Default: "4444")
  - `--host <obs-websocket hostname/ip>`(Default: "localhost")
