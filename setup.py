@@ -34,7 +34,7 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitor",
                  "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode"]
-faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity"]
+faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity", "SetColorCorrectionHueShift"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
                "TransitionToProgram": """{"request-type": "TransitionToProgram", "message-id" : "1"%s}""",
@@ -73,6 +73,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "ResumeRecording": """{"request-type": "ResumeRecording", "message-id" : "MIDItoOBS-ResumeRecording"}""",
                "ToggleSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": %s, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
                "SetOpacity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"opacity": %s}}""",
+               "SetColorCorrectionHueShift": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"hue_shift": %s}}""",
                "SetAudioMonitorType": """{"request-type": "SetAudioMonitorType", "message-id" : "1","sourceName" : "%s", "monitorType": "%s"}""",
                "EnableStudioMode": """{"request-type": "EnableStudioMode", "message-id" : "1"}""",
                "DisableStudioMode": """{"request-type": "DisableStudioMode", "message-id" : "1"}""",
@@ -297,6 +298,21 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         if filtername:
             action = jsonArchive["SetOpacity"] % (source, filtername, "%s")
             saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, [0, 100], "SetOpacity", deviceID)
+        else:
+            print("The selected source has no Color Correction filter with the name 'miditoobs-opacity'. Please add it in the source filter dialog and try again.")
+    elif action == "SetColorCorrectionHueShift":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filtername = checkIfSourceHasColorCorrectionFilter(source)
+        if filtername:
+            scale = askForInputScaling()
+            action = jsonArchive["SetColorCorrectionHueShift"] % (source, filtername, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, scale, "SetColorCorrectionHueShift", deviceID)
         else:
             print("The selected source has no Color Correction filter with the name 'miditoobs-opacity'. Please add it in the source filter dialog and try again.")
     

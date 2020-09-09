@@ -94,6 +94,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms)
   - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid range you can work in). This will automatically default to the first gain filter found in a source!
   - SetOpacity: This controls the opacity of a source or scene by using the "Color Correction" filter in obs. To use add a "Color Correction" filter to the source you want it on and rename the filter to "miditoobs-opacity". Then it will be correctly detected in the setup.
+  - SetColorCorrectionHueShift: This controls the hue shift of the color correction filter. Like "SetOpacity" it need the filter to be named "miditoobs-opacity" to work
 - Now you can either setup another button/fader by repeating the steps above(except starting the script again) or just close the window to exit the configuration
   
 For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)
