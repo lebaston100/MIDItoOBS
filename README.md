@@ -87,14 +87,23 @@ If you want to install all packages in one go, run "pip install -r requirements.
   
 - Available for faders/knobs
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
-  - SetSyncOffset: Sets the sync offset of a source(in ns)
-  - SetSourcePosition: Sets the x or y position of a source (in px)
-  - SetSourceRotation: Sets the rotation of a source (in degree)
+  - SetSyncOffset: Sets the sync offset of a source [in ns]
+  - SetSourcePosition: Sets the x or y position of a source [in px]
+  - SetSourceRotation: Sets the rotation of a source [in degree]
   - SetSourceScale: Sets the scale for x/y OR both of a source (For the scaling 1 = original scale). You can also select around which position the source will be scaled(align).
-  - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms)
+  - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)[in ms]
   - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid range you can work in). This will automatically default to the first gain filter found in a source!
   - SetOpacity: This controls the opacity of a source or scene by using the "Color Correction" filter in obs. To use add a "Color Correction" filter to the source you want it on and rename the filter to "miditoobs-opacity". Then it will be correctly detected in the setup.
-  - SetColorCorrectionHueShift: This controls the hue shift of the color correction filter. Like "SetOpacity" it need the filter to be named "miditoobs-opacity" to work
+  - SetColorCorrectionHueShift: This controls the hue shift of the color correction filter. Like "SetOpacity" it needs the "Color Correction" filter to be named "miditoobs-opacity" to work
+  - Filter/Chroma Key - Contrast: This controls the "Contrast" value for a "Chroma Key" Filter [-1 - 1]
+  - Filter/Chroma Key - Brightness: This controls the "Brightness" value for a "Chroma Key" Filter [-1 - 1]
+  - Filter/Chroma Key - Gamma: This controls the "Gamma" value for a "Chroma Key" Filter [-1 - 1]
+  - Filter/Chroma Key - Opacity: This controls the "Opacity" value for a "Chroma Key" Filter [0 - 100]
+  - Filter/Chroma Key - Spill Reduction: This controls the "Key Color Spill Reduction" value for a "Chroma Key" Filter [0 - 1000]
+  - Filter/Luma Key - Luma Max: Opacity: This controls the "Luma Max" value for a "Luma Key" Filter [0 - 1]
+  - Filter/Luma Key - Luma Min: Opacity: This controls the "Luma Min" value for a "Luma Key" Filter [0 - 1]
+  - Filter/Color Correction - Saturation: This controls the "Saturation" value for a "Color Correction" Filter [-1 - 5]
+  - Filter/Color Correction - Contrast: This controls the "Contrast" value for a "Color Correction" Filter [-2 - 2]
 - Now you can either setup another button/fader by repeating the steps above(except starting the script again) or just close the window to exit the configuration
   
 For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)

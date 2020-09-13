@@ -250,7 +250,7 @@ class MidiHandler:
                     command = result["cmd"]
                     scaled = map_scale(value, 0, 127, result["scale_low"], result["scale_high"])
 
-                    if command in ["SetSourceScale", "SetGainFilter", "SetOpacity", "SetColorCorrectionHueShift"]:
+                    if command == "SetSourceScale":
                         self.obs_socket.send(action.format(scaled))
 
                     # Super dirty hack but @AlexDash says that it works
@@ -259,7 +259,10 @@ class MidiHandler:
                         # Yes, this literally raises a float to a third degree
                         self.obs_socket.send(action % scaled**3)
 
-                    if command in ["SetSourceRotation", "SetTransitionDuration", "SetSyncOffset", "SetSourcePosition"]:
+                    if command in ["SetGainFilter", "SetOpacity", "SetColorCorrectionHueShift", "Filter/Chroma Key - Contrast", "Filter/Chroma Key - Brightness", "Filter/Chroma Key - Gamma", "Filter/Luma Key - Luma Max", "Filter/Luma Key - Luma Min", "Filter/Color Correction - Saturation", "Filter/Color Correction - Contrast"]:
+                        self.obs_socket.send(action % scaled)
+
+                    if command in ["SetSourceRotation", "SetTransitionDuration", "SetSyncOffset", "SetSourcePosition", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction"]:
                         self.obs_socket.send(action % int(scaled))
 
     def handle_obs_message(self, ws, message):

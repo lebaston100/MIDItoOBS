@@ -34,7 +34,9 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitor",
                  "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode"]
-faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity", "SetColorCorrectionHueShift"]
+faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity", "SetColorCorrectionHueShift",
+                "Filter/Chroma Key - Contrast", "Filter/Chroma Key - Brightness", "Filter/Chroma Key - Gamma", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction",
+                "Filter/Luma Key - Luma Max", "Filter/Luma Key - Luma Min", "Filter/Color Correction - Saturation", "Filter/Color Correction - Contrast"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
                "TransitionToProgram": """{"request-type": "TransitionToProgram", "message-id" : "1"%s}""",
@@ -74,6 +76,15 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "ToggleSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": %s, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
                "SetOpacity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"opacity": %s}}""",
                "SetColorCorrectionHueShift": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"hue_shift": %s}}""",
+               "Filter/Chroma Key - Contrast": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"contrast": %s}}""",
+               "Filter/Chroma Key - Brightness": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"brightness": %s}}""",
+               "Filter/Chroma Key - Gamma": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"gamma": %s}}""",
+               "Filter/Chroma Key - Opacity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"opacity": %s}}""",
+               "Filter/Chroma Key - Spill Reduction": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"spill": %s}}""",
+               "Filter/Luma Key - Luma Max": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"luma_max": %s}}""",
+               "Filter/Luma Key - Luma Min": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"luma_min": %s}}""",
+               "Filter/Color Correction - Saturation": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"saturation": %s}}""",
+               "Filter/Color Correction - Contrast": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"contrast": %s}}""",
                "SetAudioMonitorType": """{"request-type": "SetAudioMonitorType", "message-id" : "1","sourceName" : "%s", "monitorType": "%s"}""",
                "EnableStudioMode": """{"request-type": "EnableStudioMode", "message-id" : "1"}""",
                "DisableStudioMode": """{"request-type": "DisableStudioMode", "message-id" : "1"}""",
@@ -315,7 +326,205 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
             saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, scale, "SetColorCorrectionHueShift", deviceID)
         else:
             print("The selected source has no Color Correction filter with the name 'miditoobs-opacity'. Please add it in the source filter dialog and try again.")
-    
+    elif action == "Filter/Chroma Key - Contrast":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "chroma_key_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Chroma Key\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Chroma Key - Brightness":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "chroma_key_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Chroma Key\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Chroma Key - Gamma":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "chroma_key_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Chroma Key\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Chroma Key - Opacity":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "chroma_key_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Chroma Key\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Chroma Key - Spill Reduction":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "chroma_key_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Chroma Key\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Luma Key - Luma Max":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "luma_key_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Luma Key\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Luma Key - Luma Min":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "luma_key_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Luma Key\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Color Correction - Saturation":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "color_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Color Correction\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Color Correction - Contrast":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "color_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Color Correction\" filter. Please add it in the source filter dialog and try again.")
+
 def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
     print()
     print("You selected: %s" % action)
@@ -797,7 +1006,19 @@ def getSourceFilters(sourcename):
         return jsn["filters"]
     else:
         return False
-    
+
+def getCompatibleFiltersFromSource(sourceName, filterType):
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
+    print("\nRetrieving source filters, plase wait")
+    ws.send('{"request-type": "GetSourceFilters", "message-id": "MIDItoOBS-getSourceFilters", "sourceName": "' + sourceName + '"}')
+    result =  ws.recv()
+    ws.close()
+    jsn = json.loads(result)
+    filters = list(filter(lambda d: d["type"] == filterType, jsn["filters"]))
+    if filters:
+        return filters
+    else:
+        return False
 
 def configureDevices(switch):
     dbresult = devdb.all()
