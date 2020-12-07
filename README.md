@@ -1,6 +1,6 @@
 
 # Midi OBS what???
-This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/gain/opacity/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
+This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/gain/opacity/t-bar/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
 If you want to play it safe, use the latest release. If you want to use the latest features then just clone the master branch.
 
@@ -94,6 +94,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)[in ms]
   - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid range you can work in). This will automatically default to the first gain filter found in a source!
   - SetOpacity: This controls the opacity of a source or scene by using the "Color Correction" filter in obs. To use add a "Color Correction" filter to the source you want it on and rename the filter to "miditoobs-opacity". Then it will be correctly detected in the setup.
+  - MoveTbar: (Nightly/not-yet-released 4.9 needed to work) This will move the transition T-Bar. Make sure you always completely finish a T-Bar move by going to one end to the other otherwise obs will stay in the "a transition is currently happening"-state. Be careful because the state might go "out of sync" with the physical fader if you use any other tools that move the t-bar.
   - SetColorCorrectionHueShift: This controls the hue shift of the color correction filter. Like "SetOpacity" it needs the "Color Correction" filter to be named "miditoobs-opacity" to work
   - Filter/Chroma Key - Contrast: This controls the "Contrast" value for a "Chroma Key" Filter [-1 - 1]
   - Filter/Chroma Key - Brightness: This controls the "Brightness" value for a "Chroma Key" Filter [-1 - 1]
@@ -222,11 +223,11 @@ Special thanks to:
 
 ### Tested on/with:
 
-- Win 10 1909
+- Win 10 20H2
 - Ubuntu 18.04
-- Python 3.8.1:1b293b6
-- obs-studio 25.0.8
-- obs-websocket 4.8.0
+- Python 3.8.3:6f8c832
+- obs-studio 26.1 rc1
+- obs-websocket 4.8.0 (Nightly build for t-bar support needed or 4.9 when it comes out)
 - KORG nanoPAD
 - KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike) and [houz](https://github.com/houz))
 - KORG padKONTROL (tested by [jberentsson](https://github.com/jberentsson))

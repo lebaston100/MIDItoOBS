@@ -34,7 +34,7 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitorType",
                  "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode"]
-faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity", "SetColorCorrectionHueShift",
+faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity", "MoveTbar", "SetColorCorrectionHueShift",
                 "Filter/Chroma Key - Contrast", "Filter/Chroma Key - Brightness", "Filter/Chroma Key - Gamma", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction", "Filter/Chroma Key - Similarity",
                 "Filter/Luma Key - Luma Max", "Filter/Luma Key - Luma Max Smooth", "Filter/Luma Key - Luma Min", "Filter/Luma Key - Luma Min Smooth", "Filter/Color Correction - Saturation", "Filter/Color Correction - Contrast",
                 "Filter/Color Correction - Brightness", "Filter/Color Correction - Gamma", "Filter/Color Correction - Hue Shift", "Filter/Color Key - Similarity", "Filter/Color Key - Smoothness", "Filter/Color Key - Brightness", "Filter/Color Key - Contrast",
@@ -104,7 +104,8 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "SetAudioMonitorType": """{"request-type": "SetAudioMonitorType", "message-id" : "1","sourceName" : "%s", "monitorType": "%s"}""",
                "EnableStudioMode": """{"request-type": "EnableStudioMode", "message-id" : "1"}""",
                "DisableStudioMode": """{"request-type": "DisableStudioMode", "message-id" : "1"}""",
-               "ToggleStudioMode": """{"request-type": "ToggleStudioMode", "message-id" : "1"}"""}
+               "ToggleStudioMode": """{"request-type": "ToggleStudioMode", "message-id" : "1"}""",
+               "MoveTbar": """{"request-type": "SetTBarPosition", "message-id" : "1", "release": false, "position": %s}"""}
 
 sceneListShort = []
 sceneListLong = []
@@ -327,6 +328,9 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
             saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, [0, 100], "SetOpacity", deviceID)
         else:
             print("The selected source has no Color Correction filter with the name 'miditoobs-opacity'. Please add it in the source filter dialog and try again.")
+    elif action == "MoveTbar":
+        action = jsonArchive["MoveTbar"]# % ("%s")
+        saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, [0, 1], "MoveTbar", deviceID)
     elif action == "SetColorCorrectionHueShift":
         updateSceneList()
         tempSceneList = []

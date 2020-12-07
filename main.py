@@ -39,6 +39,16 @@ TEMPLATES = {
   "request-type": "GetPreviewScene",
   "message-id": "%d",
   "_unused": "%s"
+}""",
+"ReleaseTBar": """{
+  "request-type": "ReleaseTBar",
+  "message-id": "ReleaseTBarPlease"
+}""",
+"ResetTBar": """{
+  "request-type": "SetTBarPosition",
+  "message-id": "ResetTBar",
+  "release": true,
+  "position": %s
 }"""
 }
 
@@ -135,10 +145,14 @@ class MidiHandler:
         self._action_buffer = []
         self._action_counter = 2
         self._portobjects = []
+        self._lastTbarMove = time()
+        self._tbarActive = False
+        self._tbarDir = 0
 
         # Feedback blocking
         self.blockcount=0
         self.block = False
+        
         #load tinydb configuration database
         self.log.debug("Trying to load config file  from %s" % config_path)
         tiny_database = TinyDB(config_path, indent=4)
@@ -265,6 +279,23 @@ class MidiHandler:
                     if command in ["SetSourceRotation", "SetTransitionDuration", "SetSyncOffset", "SetSourcePosition", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction", "Filter/Chroma Key - Similarity", "Filter/Color Key - Similarity", "Filter/Color Key - Smoothness", "Filter/Scroll - Horizontal Speed", "Filter/Scroll - Vertical Speed"]:
                         self.obs_socket.send(action % int(scaled))
 
+                    if command == "MoveTbar":
+                       self._lastTbarMove = time()
+                       self._tbarActive = True
+                       if self._tbarDir:
+                          self.obs_socket.send(action % scaled)
+                       else:
+                          self.obs_socket.send(action % map_scale(value, 0, 127, result["scale_high"], result["scale_low"]))
+
+                       if value == 0:
+                          self._tbarDir = True
+                       elif value == 127:
+                          self._tbarDir = False
+                       if value == 0 or value == 127:
+                          self._tbarActive = False
+                          self.obs_socket.send(TEMPLATES.get("ReleaseTBar"))
+                          self.log.debug("releasing t-bar because of end reached")
+
     def handle_obs_message(self, ws, message):
         self.log.debug("Received new message from OBS")
         payload = json.loads(message)
@@ -320,6 +351,16 @@ class MidiHandler:
                 self.sceneChanged(request_types[update_type], scene_name)
             elif update_type == "SourceVolumeChanged":
                 self.volChanged(payload["sourceName"],payload["volume"])
+
+            # let's abuse the fact that obs sends many updates that we don't have to rely on a timer for the t-bar timeout
+            # we don't actually want the use to make use of the timeout because it brings the hardware fader out of sync and there will
+            # be a value jump with the next transition
+            if self._tbarActive and time() - self._lastTbarMove > 30: #30 sec timeout
+                self.log.debug("releasing t-bar because of timeout")
+                self.obs_socket.send(TEMPLATES.get("ResetTBar") % int(self._tbarDir))
+                self._lastTbarMove = time()
+                self._tbarActive = False
+
     def volChanged(self, source_name, volume):
         self.log.info("Volume "+source_name+" changed to val: "+str(volume))
         results = self.mappingdb.getmany(self.mappingdb.find('input_type == "fader" and bidirectional == 1'))
@@ -327,14 +368,12 @@ class MidiHandler:
             self.log.info("no fader results")
             return
         for result in results:
-
-
             j=result["action"]%"0"
             k=json.loads(j)["source"]
             self.log.info(k)
             if k == source_name:
                 val = int(map_scale(volume, result["scale_low"], result["scale_high"], 0, 127))
-                self.log.info(val)
+                self.log.debug(val)
 
                 msgNoC = result.get("out_msgNoC", result["msgNoC"])
                 self.log.info(msgNoC)
