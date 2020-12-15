@@ -1,5 +1,5 @@
 mido==1.2.9
-tinydb==3.3.0
+tinydb==4.3.0
 websocket-client==0.57.0
 python-rtmidi==1.4.6
 dbj==0.1.10
