@@ -951,11 +951,15 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
                     tempSceneList.append(line["name"])
         source = source1 = printArraySelect(tempSceneList)
         sceneListShort.append("--Current--")
+        print("\nSelect if you want to target the source only in a specific scene")
         scene = printArraySelect(sceneListShort)
         if scene != "--Current--":
-            source = source + '", "scene": "' + scene
+            source = source + '", "scene-name": "' + scene
+            action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
+            saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility2", source1, scene, deviceID)
+            return
         action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-        saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility", source1, "" , deviceID)
+        saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility", source1, "", deviceID)
     elif action == "ToggleMute":
         updateSceneList()
         updateSpecialSources()

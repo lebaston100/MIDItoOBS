@@ -19,6 +19,12 @@ TEMPLATES = {
   "message-id": "%d",
   "item": "%s"
 }""",
+"ToggleSourceVisibility2": """{
+  "request-type": "GetSceneItemProperties",
+  "message-id": "%d",
+  "item": "%s",
+  "scene-name": "%s"
+}""",
 "ReloadBrowserSource": """{
   "request-type": "GetSourceSettings",
   "message-id": "%d",
@@ -304,6 +310,10 @@ class MidiHandler:
 
         if "error" in payload:
             self.log.error("OBS returned error: %s" % payload["error"])
+            for action in self._action_buffer:
+                if action[0] == int(payload["message-id"]):
+                    self.log.debug("Removing action with message id %s from buffer" % payload["message-id"])
+                    self._action_buffer.remove(action)
             return
 
         if "message-id" in payload:
@@ -312,6 +322,7 @@ class MidiHandler:
             self.log.debug("Looking for action with message id `%s`" % message_id)
             for action in self._action_buffer:
                 (buffered_id, template, kind) = action
+                self.log.debug(action)
 
                 if buffered_id != int(payload["message-id"]):
                     continue
@@ -319,7 +330,7 @@ class MidiHandler:
                 del buffered_id
                 self.log.info("Action `%s` was requested by OBS" % kind)
 
-                if kind == "ToggleSourceVisibility":
+                if kind in ["ToggleSourceVisibility", "ToggleSourceVisibility2"]:
                     # Dear lain, I so miss decent ternary operators...
                     invisible = "false" if payload["visible"] else "true"
                     self.obs_socket.send(template % invisible)
