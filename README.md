@@ -119,6 +119,8 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - Filter/Sharpen - Sharpness: This controls the "Sharpness" value for a "Sharpen" Filter [0 - 1]
   - Filter/Scroll - Horizontal Speed: This controls the "Horizontal Speed" value for a "Scroll" Filter [-500 - 500]
   - Filter/Scroll - Vertical Speed: This controls the "Vertical Speed" value for a "Scroll" Filter [-500 - 500]
+  - Filter/Video Delay (Async) - Delay: This controls the "Delay" value (in ms) for a "ideo Delay (Async)" Filter [-0 - 20000]
+  - Filter/Render Delay - Delay:  This controls the "Delay" value (in ms) for a "Render Delay" Filter [0 - 500]
 - Now you can either setup another button/fader by repeating the steps above(except starting the script again) or just close the window to exit the configuration
   
 For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)
