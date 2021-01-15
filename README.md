@@ -1,6 +1,6 @@
 
 # Midi OBS what???
-This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/gain/opacity/t-bar/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
+This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/filter settings/gain/opacity/t-bar/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
 
 If you want to play it safe, use the latest release. If you want to use the latest features then just clone the master branch.
 
@@ -121,7 +121,10 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - Filter/Scroll - Vertical Speed: This controls the "Vertical Speed" value for a "Scroll" Filter [-500 - 500]
   - Filter/Video Delay (Async) - Delay: This controls the "Delay" value (in ms) for a "ideo Delay (Async)" Filter [-0 - 20000]
   - Filter/Render Delay - Delay:  This controls the "Delay" value (in ms) for a "Render Delay" Filter [0 - 500]
+  - Filter/Generic Filter - Generic Setting: This can control every property of any filter, even filters added by plugins or on (global) audio sources. You have to specify what the setting property is called ,either by manually calling GetSourceFilterInfo via obs-websocket or by changing the default value via obs which then shows up in a list in the setup. You also have to specify if the data should be a Int (Whole Number) or Float (Floating Point Number)
 - Now you can either setup another button/fader by repeating the steps above(except starting the script again) or just close the window to exit the configuration
+
+Important note about all controls that involve a scene: In OBS scenes are also sources, so all the filter controls and TakeSourceScreenshot will also work on scenes. They will be part of the list that you are prompted with in the setup.
   
 For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)
 
@@ -225,7 +228,7 @@ Special thanks to:
 
 ### Tested on/with:
 
-- Win 10 20H2
+- Windows 10 20H2
 - Ubuntu 18.04
 - Python 3.8.3:6f8c832
 - obs-studio 26.1 rc1

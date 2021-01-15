@@ -38,7 +38,8 @@ faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRot
                 "Filter/Chroma Key - Contrast", "Filter/Chroma Key - Brightness", "Filter/Chroma Key - Gamma", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction", "Filter/Chroma Key - Similarity",
                 "Filter/Luma Key - Luma Max", "Filter/Luma Key - Luma Max Smooth", "Filter/Luma Key - Luma Min", "Filter/Luma Key - Luma Min Smooth", "Filter/Color Correction - Saturation", "Filter/Color Correction - Contrast",
                 "Filter/Color Correction - Brightness", "Filter/Color Correction - Gamma", "Filter/Color Correction - Hue Shift", "Filter/Color Key - Similarity", "Filter/Color Key - Smoothness", "Filter/Color Key - Brightness", "Filter/Color Key - Contrast",
-                "Filter/Color Key - Gamma", "Filter/Sharpen - Sharpness", "Filter/Scroll - Horizontal Speed", "Filter/Scroll - Vertical Speed", "Filter/Video Delay (Async) - Delay", "Filter/Render Delay - Delay"]
+                "Filter/Color Key - Gamma", "Filter/Sharpen - Sharpness", "Filter/Scroll - Horizontal Speed", "Filter/Scroll - Vertical Speed", "Filter/Video Delay (Async) - Delay", "Filter/Render Delay - Delay",
+                "Filter/Generic Filter - Generic Setting"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
                "SetPreviewScene": """{"request-type": "SetPreviewScene", "message-id" : "1","scene-name" : "%s"}""",
                "TransitionToProgram": """{"request-type": "TransitionToProgram", "message-id" : "1"%s}""",
@@ -103,6 +104,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "Filter/Scroll - Vertical Speed": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"speed_y": %s}}""",
                "Filter/Video Delay (Async) - Delay": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"delay_ms": %s}}""",
                "Filter/Render Delay - Delay": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"delay_ms": %s}}""",
+               "Filter/Generic Filter - Generic Setting": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"%s": %s}}""",
                "SetAudioMonitorType": """{"request-type": "SetAudioMonitorType", "message-id" : "1","sourceName" : "%s", "monitorType": "%s"}""",
                "EnableStudioMode": """{"request-type": "EnableStudioMode", "message-id" : "1"}""",
                "DisableStudioMode": """{"request-type": "DisableStudioMode", "message-id" : "1"}""",
@@ -923,6 +925,38 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
             saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
         else:
             print("The selected source has no \"Render Delay\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Generic Filter - Generic Setting":
+        updateSpecialSources()
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        for item in specialSourcesList:
+            tempSceneList.append(item)
+        source = printArraySelect(tempSceneList)
+        filters = getSourceFilters(source)
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 0:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+                filterProperties = next(list(f["settings"].keys()) for f in filters if f["name"] == filterName)
+                print("Here are some filter properties that have been changed. If you want the setting to show up here you must first change it's value inside obs away from the default.")
+                for line in filterProperties:
+                    print("'{0}'".format(line))
+                propName = str(input("Please enter the full name of the property, without the quotes (even if it didn't show up in the list above but you know the name): "))
+                isInt = int(input("Should the data be a:\n0: Int\n1: Float\nSelect 0-1: "))
+                scale = askForInputScaling()
+                obsaction = jsonArchive[action] % (source, filterName, propName, "%s")
+                if not isInt:
+                    saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, "Filter-Generic-Int", deviceID)
+                else:
+                    saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, "Filter-Generic-Float", deviceID)
+        else:
+            print("There are currently no filters on this source")
 
 
 def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
