@@ -244,3 +244,6 @@ Special thanks to:
 - Novation LaunchControl XL (tested by [lannonbr](https://github.com/lannonbr))
 
 Let me know if you had success with your device.
+
+
+**This project is not affiliated with the OBS Project or obs-websocket**
