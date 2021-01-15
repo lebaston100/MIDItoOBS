@@ -352,6 +352,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -374,6 +375,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -396,6 +398,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -418,6 +421,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -440,6 +444,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -462,6 +467,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -484,6 +490,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -506,6 +513,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -528,6 +536,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -550,6 +559,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -572,6 +582,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -594,6 +605,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -616,6 +628,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -638,6 +651,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -660,6 +674,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -682,6 +697,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -704,6 +720,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -726,6 +743,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -748,6 +766,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -770,6 +789,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -792,6 +812,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -814,6 +835,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -836,6 +858,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -858,6 +881,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -880,6 +904,7 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -1108,6 +1133,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -1121,6 +1147,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSpecialSources()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -1142,6 +1169,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSpecialSources()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
@@ -1163,6 +1191,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         updateSpecialSources()
         tempSceneList = []
         for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
             for line in scene["sources"]:
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
