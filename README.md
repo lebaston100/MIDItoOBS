@@ -93,9 +93,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetSourceScale: Sets the scale for x/y OR both of a source (For the scaling 1 = original scale). You can also select around which position the source will be scaled(align).
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)[in ms]
   - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid range you can work in). This will automatically default to the first gain filter found in a source!
-  - SetOpacity: This controls the opacity of a source or scene by using the "Color Correction" filter in obs. To use add a "Color Correction" filter to the source you want it on and rename the filter to "miditoobs-opacity". Then it will be correctly detected in the setup.
   - MoveTbar: (Nightly/not-yet-released 4.9 needed to work) This will move the transition T-Bar. Make sure you always completely finish a T-Bar move by going to one end to the other otherwise obs will stay in the "a transition is currently happening"-state. Be careful because the state might go "out of sync" with the physical fader if you use any other tools that move the t-bar.
-  - SetColorCorrectionHueShift: This controls the hue shift of the color correction filter. Like "SetOpacity" it needs the "Color Correction" filter to be named "miditoobs-opacity" to work
   - Filter/Chroma Key - Contrast: This controls the "Contrast" value for a "Chroma Key" Filter [-1 - 1]
   - Filter/Chroma Key - Brightness: This controls the "Brightness" value for a "Chroma Key" Filter [-1 - 1]
   - Filter/Chroma Key - Gamma: This controls the "Gamma" value for a "Chroma Key" Filter [-1 - 1]
@@ -110,7 +108,8 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - Filter/Color Correction - Contrast: This controls the "Contrast" value for a "Color Correction" Filter [-2 - 2]
   - Filter/Color Correction - Brightness: This controls the "Brightness" value for a "Color Correction" Filter [-1 - 1]
   - Filter/Color Correction - Gamma: This controls the "Gamma" value for a "Color Correction" Filter [-3 - 3]
-  - Filter/Color Correction - Hue Shift: This controls the "Gamma" value for a "Color Correction" Filter [-180 - 180]
+  - Filter/Color Correction - Hue Shift: This controls the "Gamma" value for a "Color Correction" Filter [-180 - 180] (Replaces the old SetColorCorrectionHueShift)
+  - Filter/Color Correction - Opacity: This controls the "Opacity" value for a "Color Correction" Filter [0 - 100] (Replaces the old SetOpacity)
   - Filter/Color Key - Similarity: This controls the "Similarity" value for a "Color Key" Filter [1 - 1000]
   - Filter/Color Key - Smoothness: This controls the "Smoothness" value for a "Color Key" Filter [1 - 1000]
   - Filter/Color Key - Brightness: This controls the "Brightness" value for a "Color Key" Filter [-1 - 1]

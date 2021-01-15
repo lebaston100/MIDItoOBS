@@ -34,10 +34,10 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitorType",
                  "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode"]
-faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "SetOpacity", "MoveTbar", "SetColorCorrectionHueShift",
+faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "MoveTbar",
                 "Filter/Chroma Key - Contrast", "Filter/Chroma Key - Brightness", "Filter/Chroma Key - Gamma", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction", "Filter/Chroma Key - Similarity",
                 "Filter/Luma Key - Luma Max", "Filter/Luma Key - Luma Max Smooth", "Filter/Luma Key - Luma Min", "Filter/Luma Key - Luma Min Smooth", "Filter/Color Correction - Saturation", "Filter/Color Correction - Contrast",
-                "Filter/Color Correction - Brightness", "Filter/Color Correction - Gamma", "Filter/Color Correction - Hue Shift", "Filter/Color Key - Similarity", "Filter/Color Key - Smoothness", "Filter/Color Key - Brightness", "Filter/Color Key - Contrast",
+                "Filter/Color Correction - Brightness", "Filter/Color Correction - Gamma", "Filter/Color Correction - Hue Shift", "Filter/Color Correction - Opacity", "Filter/Color Key - Similarity", "Filter/Color Key - Smoothness", "Filter/Color Key - Brightness", "Filter/Color Key - Contrast",
                 "Filter/Color Key - Gamma", "Filter/Sharpen - Sharpness", "Filter/Scroll - Horizontal Speed", "Filter/Scroll - Vertical Speed", "Filter/Video Delay (Async) - Delay", "Filter/Render Delay - Delay",
                 "Filter/Generic Filter - Generic Setting"]
 jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "message-id" : "1", "scene-name" : "%s"}""",
@@ -77,8 +77,6 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "PauseRecording": """{"request-type": "PauseRecording", "message-id" : "MIDItoOBS-PauseRecording"}""",
                "ResumeRecording": """{"request-type": "ResumeRecording", "message-id" : "MIDItoOBS-ResumeRecording"}""",
                "ToggleSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": %s, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
-               "SetOpacity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"opacity": %s}}""",
-               "SetColorCorrectionHueShift": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"hue_shift": %s}}""",
                "Filter/Chroma Key - Contrast": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"contrast": %s}}""",
                "Filter/Chroma Key - Brightness": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"brightness": %s}}""",
                "Filter/Chroma Key - Gamma": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"gamma": %s}}""",
@@ -94,6 +92,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "Filter/Color Correction - Brightness": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"brightness": %s}}""",
                "Filter/Color Correction - Gamma": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"gamma": %s}}""",
                "Filter/Color Correction - Hue Shift": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"hue_shift": %s}}""",
+               "Filter/Color Correction - Opacity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"opacity": %s}}""",
                "Filter/Color Key - Similarity": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"similarity": %s}}""",
                "Filter/Color Key - Smoothness": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"smoothness": %s}}""",
                "Filter/Color Key - Brightness": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"brightness": %s}}""",
@@ -318,38 +317,9 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
             saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, scale, "SetGainFilter", deviceID)
         else:
             print("The selected source has no gain filter. Please add it in the source filter dialog and try again.")
-    elif action == "SetOpacity":
-        updateSceneList()
-        tempSceneList = []
-        for scene in sceneListLong:
-            for line in scene["sources"]:
-                if line["name"] not in tempSceneList:
-                    tempSceneList.append(line["name"])
-        source = printArraySelect(tempSceneList)
-        filtername = checkIfSourceHasColorCorrectionFilter(source)
-        if filtername:
-            action = jsonArchive["SetOpacity"] % (source, filtername, "%s")
-            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, [0, 100], "SetOpacity", deviceID)
-        else:
-            print("The selected source has no Color Correction filter with the name 'miditoobs-opacity'. Please add it in the source filter dialog and try again.")
     elif action == "MoveTbar":
         action = jsonArchive["MoveTbar"]# % ("%s")
         saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, [0, 1], "MoveTbar", deviceID)
-    elif action == "SetColorCorrectionHueShift":
-        updateSceneList()
-        tempSceneList = []
-        for scene in sceneListLong:
-            for line in scene["sources"]:
-                if line["name"] not in tempSceneList:
-                    tempSceneList.append(line["name"])
-        source = printArraySelect(tempSceneList)
-        filtername = checkIfSourceHasColorCorrectionFilter(source)
-        if filtername:
-            scale = askForInputScaling()
-            action = jsonArchive["SetColorCorrectionHueShift"] % (source, filtername, "%s")
-            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, scale, "SetColorCorrectionHueShift", deviceID)
-        else:
-            print("The selected source has no Color Correction filter with the name 'miditoobs-opacity'. Please add it in the source filter dialog and try again.")
     elif action == "Filter/Chroma Key - Contrast":
         updateSceneList()
         tempSceneList = []
@@ -673,6 +643,29 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
         else:
             print("The selected source has no \"Color Correction\" filter. Please add it in the source filter dialog and try again.")
     elif action == "Filter/Color Correction - Hue Shift":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            tempSceneList.append(scene["name"])
+            for line in scene["sources"]:
+                if line["name"] not in tempSceneList:
+                    tempSceneList.append(line["name"])
+        source = printArraySelect(tempSceneList)
+        filters = getCompatibleFiltersFromSource(source, "color_filter")
+        if filters:
+            tempFilterList = [f["name"] for f in filters]
+            if len(tempFilterList) > 1:
+                filterName = printArraySelect(tempFilterList)
+                print("Selected filtername:", filterName)
+            else:
+                filterName = tempFilterList[0]
+                print("Automatically selected filter \"{}\" because it's the only one that fit's this request type".format(filterName))
+            scale = askForInputScaling()
+            obsaction = jsonArchive[action] % (source, filterName, "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , obsaction, scale, action, deviceID)
+        else:
+            print("The selected source has no \"Color Correction\" filter. Please add it in the source filter dialog and try again.")
+    elif action == "Filter/Color Correction - Opacity":
         updateSceneList()
         tempSceneList = []
         for scene in sceneListLong:
