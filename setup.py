@@ -1305,14 +1305,17 @@ def saveTODOButtonToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action,
         db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2})
 
 def printArraySelect(array):
-    counter = 0
-    for line in array:
-        print("%s: %s" % (counter, line))
-        counter += 1
-    if counter > 1:
-        return array[int(input("Select 0-%s: " % str(len(array)-1)))]
-    else:
-        return array[int(input("Select 0: "))]
+    while True:
+        for i, line in enumerate(array):
+            print("{}: {}".format(i, line))
+        if i > 0:
+            select = int(input("Select 0-%s: " % str(len(array)-1)))
+        else:
+            select = int(input("Select 0: "))
+        if select >= 0 and select <= i:
+            return array[select]
+        else:
+            print("\nPlease select a valid number!")
 
 def askForInputScaling():
     print("Setup input scale")
