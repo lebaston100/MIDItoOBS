@@ -69,7 +69,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "SetSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
                "ToggleSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
                "SetSourceScale": """{{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "scale": {{"%s": %s%s}}}}""",
-               "ReloadBrowserSource": """{"request-type": "SetSourceSettings", "message-id" : "1", "sourceName": "%s", "sourceSettings": {"url": "%s"}}""",
+               "ReloadBrowserSource": """{"request-type": "RefreshBrowserSource", "message-id" : "1", "sourceName": "%s"}""",
                "TakeSourceScreenshot": """{"request-type": "TakeSourceScreenshot", "message-id" : "MIDItoOBSscreenshot","sourceName" : "%s", "embedPictureFormat": "png"}""",
                "SetGainFilter": """{"request-type": "SetSourceFilterSettings", "message-id" : "1","sourceName" : "%s", "filterName": "%s", "filterSettings": {"db": %s}}""",
                "EnableSourceFilter": """{"request-type": "SetSourceFilterVisibility", "sourceName": "%s", "filterName": "%s", "filterEnabled": true, "message-id": "MIDItoOBS-EnableSourceFilter"}""",
@@ -1154,8 +1154,8 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
                 if line["name"] not in tempSceneList and line["type"] == "browser_source":
                     tempSceneList.append(line["name"])
         source = printArraySelect(tempSceneList)
-        action = jsonArchive["ReloadBrowserSource"] % (source, "%s")
-        saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ReloadBrowserSource", source, "", deviceID)
+        action = jsonArchive["ReloadBrowserSource"] % (source)
+        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
     elif action == "TakeSourceScreenshot":
         updateSceneList()
         tempSceneList = []

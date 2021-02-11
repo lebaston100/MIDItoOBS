@@ -25,11 +25,6 @@ TEMPLATES = {
   "item": "%s",
   "scene-name": "%s"
 }""",
-"ReloadBrowserSource": """{
-  "request-type": "GetSourceSettings",
-  "message-id": "%d",
-  "sourceName": "%s"
-}""",
 "ToggleSourceFilter": """{
   "request-type": "GetSourceFilterInfo",
   "message-id": "%d",
@@ -334,10 +329,6 @@ class MidiHandler:
                     # Dear lain, I so miss decent ternary operators...
                     invisible = "false" if payload["visible"] else "true"
                     self.obs_socket.send(template % invisible)
-                elif kind == "ReloadBrowserSource":
-                    source = payload["sourceSettings"]["url"]
-                    target = source[0:-1] if source[-1] == '#' else source + '#'
-                    self.obs_socket.send(template % target)
                 elif kind == "ToggleSourceFilter":
                     invisible = "false" if payload["enabled"] else "true"
                     self.obs_socket.send(template % invisible)
