@@ -33,7 +33,7 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitorType",
-                 "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode", "TriggerHotkeyByName"]
+                 "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode", "TriggerHotkeyByName", "TriggerHotkeyBySequence"]
 faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "MoveTbar",
                 "Filter/Chroma Key - Contrast", "Filter/Chroma Key - Brightness", "Filter/Chroma Key - Gamma", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction", "Filter/Chroma Key - Similarity",
                 "Filter/Luma Key - Luma Max", "Filter/Luma Key - Luma Max Smooth", "Filter/Luma Key - Luma Min", "Filter/Luma Key - Luma Min Smooth", "Filter/Color Correction - Saturation", "Filter/Color Correction - Contrast",
@@ -109,7 +109,8 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "DisableStudioMode": """{"request-type": "DisableStudioMode", "message-id" : "1"}""",
                "ToggleStudioMode": """{"request-type": "ToggleStudioMode", "message-id" : "1"}""",
                "MoveTbar": """{"request-type": "SetTBarPosition", "message-id" : "1", "release": false, "position": %s}""",
-               "TriggerHotkeyByName": """{"request-type": "TriggerHotkeyByName", "message-id" : "1", "hotkeyName": "%s"}"""}
+               "TriggerHotkeyByName": """{"request-type": "TriggerHotkeyByName", "message-id" : "1", "hotkeyName": "%s"}""",
+               "TriggerHotkeyBySequence": """{"request-type": "TriggerHotkeyBySequence", "message-id" : "1", "keyId": "%s"%s}"""}
 
 sceneListShort = []
 sceneListLong = []
@@ -1272,7 +1273,25 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         hotkeyName = str(input("Please enter the unique name of the hotkey, as defined when registering the hotkey (This is not a physical button name but rather an internal name. You can get it by looking at the [Hotkeys] section in the scene collection basic.ini): "))
         action = jsonArchive["TriggerHotkeyByName"] % (hotkeyName)
         saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
-        
+    elif action == "TriggerHotkeyBySequence":
+        hotkeyName = str(input("Please enter the full name of the key as defined in https://github.com/obsproject/obs-studio/blob/master/libobs/obs-hotkeys.h (OBS_KEY_<something>): "))
+        inp = input("Do you want to add any modifier keys?\n0: NO\n1: shift\n2: alt\n3: control\n4: command\nYou can select one or multiple keys by tying in the numbers of the ones you want seperated by a ',' : ")
+        mods = ""
+        cmap = ["", "shift", "alt", "control", "command"]
+        try:
+            arr = [cmap[int(i)] for i in inp.split(",") if int(i)]
+            if arr:
+                mods += ', "keyModifiers": {'
+                for ix, i in enumerate(arr):
+                    mods += f'"{i}": true'
+                    mods += "" if ix == len(arr)-1 else ","
+                mods += "}"
+        except:
+            print("Your input was wrong, make sure you follow the directions")
+        action = jsonArchive["TriggerHotkeyBySequence"] % (hotkeyName, mods)
+        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
+
+
 def saveFaderToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, scale, cmd, deviceID):
     print("Saved %s with control %s for action %s on device %s channel %s" % (msg_type, msgNoC, cmd, deviceID, msg_channel))
     Search = Query()
