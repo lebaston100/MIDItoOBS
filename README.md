@@ -84,8 +84,8 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - EnableStudioMode: Enables Studio Mode
   - DisableStudioMode: Disables Studio Mode
   - ToggleStudioMode: Toggles Studio Mode
-  - TriggerHotkeyByName: Triggers an obs event, see [https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname](https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname) for details
-  - TriggerHotkeyBySequence: Triggers an obs event based on the configured keyboard combination, see [https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybysequence](https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname) for details
+  - TriggerHotkeyByName: Triggers an obs event, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname) for details
+  - TriggerHotkeyBySequence: Triggers an obs event based on the configured keyboard combination, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname) for details
   
 - Available for faders/knobs
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
