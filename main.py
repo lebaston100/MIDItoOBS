@@ -50,6 +50,11 @@ TEMPLATES = {
   "message-id": "ResetTBar",
   "release": true,
   "position": %s
+}""",
+"ToggleMediaState": """{
+  "request-type": "GetMediaState",
+  "message-id": "%d",
+  "sourceName": "%s"
 }"""
 }
 
@@ -334,6 +339,12 @@ class MidiHandler:
                     self.obs_socket.send(template % invisible)
                 elif kind in ["SetCurrentScene", "SetPreviewScene"]:
                     self.sceneChanged(kind, payload["name"])
+                elif kind == "ToggleMediaState":
+                    if payload["mediaState"] in ["paused", "stopped", "ended"]:
+                        state = "false"
+                    elif payload["mediaState"] in ["playing"]:
+                        state = "true"
+                    self.obs_socket.send(template % state)
 
                 self.log.debug("Removing action with message id %s from buffer" % message_id)
                 self._action_buffer.remove(action)

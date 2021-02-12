@@ -33,7 +33,7 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartStopStreaming", "StartStreaming", "StopStreaming", "StartStopRecording", "StartRecording", "StopRecording", "StartStopReplayBuffer",
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitorType",
-                 "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode", "TriggerHotkeyByName", "TriggerHotkeyBySequence"]
+                 "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode", "TriggerHotkeyByName", "TriggerHotkeyBySequence", "PlayPauseMedia", "ToggleMediaState", "RestartMedia", "StopMedia", "NextMedia", "PreviousMedia"]
 faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "MoveTbar",
                 "Filter/Chroma Key - Contrast", "Filter/Chroma Key - Brightness", "Filter/Chroma Key - Gamma", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction", "Filter/Chroma Key - Similarity",
                 "Filter/Luma Key - Luma Max", "Filter/Luma Key - Luma Max Smooth", "Filter/Luma Key - Luma Min", "Filter/Luma Key - Luma Min Smooth", "Filter/Color Correction - Saturation", "Filter/Color Correction - Contrast",
@@ -110,7 +110,13 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "ToggleStudioMode": """{"request-type": "ToggleStudioMode", "message-id" : "1"}""",
                "MoveTbar": """{"request-type": "SetTBarPosition", "message-id" : "1", "release": false, "position": %s}""",
                "TriggerHotkeyByName": """{"request-type": "TriggerHotkeyByName", "message-id" : "1", "hotkeyName": "%s"}""",
-               "TriggerHotkeyBySequence": """{"request-type": "TriggerHotkeyBySequence", "message-id" : "1", "keyId": "%s"%s}"""}
+               "TriggerHotkeyBySequence": """{"request-type": "TriggerHotkeyBySequence", "message-id" : "1", "keyId": "%s"%s}""",
+               "PlayPauseMedia": """{"request-type": "PlayPauseMedia", "message-id" : "1", "sourceName": "%s", "playPause": %s}""",
+               "ToggleMediaState": """{"request-type": "PlayPauseMedia", "message-id" : "1", "sourceName": "%s", "playPause": %s}""",
+               "RestartMedia": """{"request-type": "RestartMedia", "message-id" : "1", "sourceName": "%s"}""",
+               "StopMedia": """{"request-type": "StopMedia", "message-id" : "1", "sourceName": "%s"}""",
+               "NextMedia": """{"request-type": "NextMedia", "message-id" : "1", "sourceName": "%s"}""",
+               "PreviousMedia": """{"request-type": "PreviousMedia", "message-id" : "1", "sourceName": "%s"}"""}
 
 sceneListShort = []
 sceneListLong = []
@@ -1247,8 +1253,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         for item in specialSourcesList:
             tempSceneList.append(item)
         source = printArraySelect(tempSceneList)
-        tempArray = ["None", "Monitor Only", "Monitor and Output"]
-        typeOfMonitor = printArraySelect(tempArray)
+        typeOfMonitor = printArraySelect(["None", "Monitor Only", "Monitor and Output"])
 
         if typeOfMonitor == "None":
             typeOfMonitor = "none"
@@ -1258,7 +1263,6 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
             typeOfMonitor = "monitorAndOutput"
 
         action = jsonArchive["SetAudioMonitorType"] % (source, typeOfMonitor)
-
         saveButtonToFile(channel, msgType, NoC, VoV, "button", action, deviceID)
     elif action == "EnableStudioMode":
         action = jsonArchive["EnableStudioMode"]
@@ -1290,6 +1294,80 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
             print("Your input was wrong, make sure you follow the directions")
         action = jsonArchive["TriggerHotkeyBySequence"] % (hotkeyName, mods)
         saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
+    elif action == "PlayPauseMedia":
+        tempSourceList = []
+        sources = getMediaSources()
+        if sources:
+            for source in sources:
+                tempSourceList.append(source["sourceName"])
+            source = printArraySelect(tempSourceList)
+            print("What do you want to do?")
+            playorpause = printArraySelect(["Play", "Pause"])
+            if playorpause == "Play":
+                playorpause = "false"
+            else:
+                playorpause = "true"
+            action = jsonArchive["PlayPauseMedia"] % (source, playorpause)
+            saveButtonToFile(channel, msgType, NoC, VoV, "button", action, deviceID)
+        else:
+            print("No media source found")
+    elif action == "ToggleMediaState":
+        tempSourceList = []
+        sources = getMediaSources()
+        if sources:
+            for source in sources:
+                tempSourceList.append(source["sourceName"])
+            source = printArraySelect(tempSourceList)
+            action = jsonArchive["ToggleMediaState"] % (source, "%s")
+            saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleMediaState", source, "", deviceID)
+        else:
+            print("No media source found")
+    elif action == "RestartMedia":
+        tempSourceList = []
+        sources = getMediaSources()
+        if sources:
+            for source in sources:
+                tempSourceList.append(source["sourceName"])
+            source = printArraySelect(tempSourceList)
+            action = jsonArchive["RestartMedia"] % (source)
+            saveButtonToFile(channel, msgType, NoC, VoV, "button", action, deviceID)
+        else:
+            print("No media source found")
+    elif action == "StopMedia":
+        tempSourceList = []
+        sources = getMediaSources()
+        if sources:
+            for source in sources:
+                tempSourceList.append(source["sourceName"])
+            source = printArraySelect(tempSourceList)
+            action = jsonArchive["StopMedia"] % (source)
+            saveButtonToFile(channel, msgType, NoC, VoV, "button", action, deviceID)
+        else:
+            print("No media source found")
+    elif action == "NextMedia":
+        tempSourceList = []
+        sources = getMediaSources()
+        for source in sources:
+            if source["sourceKind"] == "vlc_source":
+                tempSourceList.append(source["sourceName"])
+        if tempSourceList:
+            source = printArraySelect(tempSourceList)
+            action = jsonArchive["NextMedia"] % (source)
+            saveButtonToFile(channel, msgType, NoC, VoV, "button", action, deviceID)
+        else:
+            print("No media source found")
+    elif action == "PreviousMedia":
+        tempSourceList = []
+        sources = getMediaSources()
+        for source in sources:
+            if source["sourceKind"] == "vlc_source":
+                tempSourceList.append(source["sourceName"])
+        if tempSourceList:
+            source = printArraySelect(tempSourceList)
+            action = jsonArchive["PreviousMedia"] % (source)
+            saveButtonToFile(channel, msgType, NoC, VoV, "button", action, deviceID)
+        else:
+            print("No media source found")
 
 
 def saveFaderToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, scale, cmd, deviceID):
@@ -1429,6 +1507,19 @@ def updatesceneCollectionList():
     else:
         print("Failed to update")
     ws.close()
+
+def getMediaSources():
+    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
+    ws.send("""{"request-type": "GetMediaSourcesList", "message-id": "99999999"}""")
+    result =  ws.recv()
+    jsn = json.loads(result)
+    mediaSources = []
+    if jsn["message-id"] == "99999999":
+        mediaSources = jsn["mediaSources"]
+    else:
+        print("Failed to update")
+    ws.close()
+    return mediaSources
 
 def checkIfSourceHasGainFilter(sourcename):
     ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
