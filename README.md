@@ -249,6 +249,8 @@ Special thanks to:
 - Arturia MiniLab MKII (tested by [moops44](https://github.com/moops44)). See [Issue #17](https://github.com/lebaston100/MIDItoOBS/issues/17) for notes!
 - Native Instruments Maschine Mk3 (tested by [moops44](https://github.com/moops44)). See [Issue #18](https://github.com/lebaston100/MIDItoOBS/issues/18) for notes!
 - Novation LaunchControl XL (tested by [lannonbr](https://github.com/lannonbr))
+- Allen & Heath Xone K2
+- loopMIDI
 
 Let me know if you had success with your device.
 
