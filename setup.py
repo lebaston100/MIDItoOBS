@@ -1274,7 +1274,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         action = jsonArchive["ToggleStudioMode"]
         saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
     elif action == "TriggerHotkeyByName":
-        hotkeyName = str(input("Please enter the unique name of the hotkey, as defined when registering the hotkey (This is not a physical button name but rather an internal name. You can get it by looking at the [Hotkeys] section in the scene collection basic.ini): "))
+        hotkeyName = str(input("Please enter the unique name of the hotkey, as defined when registering the hotkey (This is not a physical button name but rather an internal name. You can get it by looking at the [Hotkeys] section in the profile basic.ini file): "))
         action = jsonArchive["TriggerHotkeyByName"] % (hotkeyName)
         saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
     elif action == "TriggerHotkeyBySequence":
@@ -1400,6 +1400,8 @@ def saveTODOButtonToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action,
 
 def printArraySelect(array):
     while True:
+        if len(array) == 0:
+            raise RuntimeError("You most likely are missing the required source or scene in obs that you just wanted to assign. Exiting now.")
         for i, line in enumerate(array):
             print("{}: {}".format(i, line))
         if i > 0:
