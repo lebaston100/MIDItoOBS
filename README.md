@@ -160,7 +160,9 @@ Some limitations might apply to the range you can use (see the comments above in
 
 THIS IS ONLY FOR ADVANCED USERS THAT ARE COMFORTABLE EDITING CONFIG FILES
 
-If you enable the "bidirectional" mode while setting up SetCurrentScene or SetPreviewScene the script will try to open the input device as an output device and listen for Preview or Program scene change events. It will then send out a note_on or control_change event on midi channel 0 to the same note or control channel that is setup for the specific scene.
+If you enable the "bidirectional" mode while setting up SetCurrentScene or SetPreviewScene the script will try to open the input device as an output device and listen for Preview or Program scene change events. It will then send out a note_on or control_change event on midi channel 0 to the same note or control channel that is setup for the specific scene. 
+
+The bidirectional mode for the ToggleMute function sends out a note_on with velocity 0 or 2 depending on the mute state and might only work on the AKAI APC mini.
 
 This default approach might not work for some devices like the X-Touch Mini that have different notes/cc values for the same button depending if the data is coming in or going out. In this case you have to add a value named "out_msgNoC" to the config.json file for the button you want to light up with the right note/cc number.
 To change the default channel you need to add a value named "out_channel" to config.json file.
@@ -232,6 +234,7 @@ Special thanks to:
 - [cpyarger](https://github.com/cpyarger) (midi feedback for faders)
 - [juandelacruz-calvo](https://github.com/juandelacruz-calvo) (Audio Monitoring command)
 - [jberentsson](https://github.com/jberentsson) (command line options)
+- [Sprinterfreak](https://github.com/Sprinterfreak) (bidi mode for ToggleMute)
 
 ### Tested on/with:
 
@@ -250,6 +253,7 @@ Special thanks to:
 - Native Instruments Maschine Mk3 (tested by [moops44](https://github.com/moops44)). See [Issue #18](https://github.com/lebaston100/MIDItoOBS/issues/18) for notes!
 - Novation LaunchControl XL (tested by [lannonbr](https://github.com/lannonbr))
 - Allen & Heath Xone K2
+- AKAI APC mini
 - loopMIDI
 
 Let me know if you had success with your device.
