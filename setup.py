@@ -1077,8 +1077,9 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         for item in specialSourcesList:
             tempSceneList.append(item)
         source = printArraySelect(tempSceneList)
+        bidirectional = askForBidirectional()
         action = jsonArchive["ToggleMute"] % source
-        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
+        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID, bidirectional)
     elif action == "SetMute":
         updateSceneList()
         updateSpecialSources()

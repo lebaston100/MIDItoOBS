@@ -31,6 +31,11 @@ TEMPLATES = {
   "sourceName": "%s",
   "filterName": "%s"
 }""",
+"ToggleMute": """{
+  "request-type": "GetMute",
+  "message-id": "%d",
+  "source": "%s"
+}""",
 "SetCurrentScene": """{
   "request-type": "GetCurrentScene",
   "message-id": "%d",
@@ -339,6 +344,9 @@ class MidiHandler:
                     self.obs_socket.send(template % invisible)
                 elif kind in ["SetCurrentScene", "SetPreviewScene"]:
                     self.sceneChanged(kind, payload["name"])
+                elif kind in ["ToggleMute"]:
+                    channel_name = payload["name"]
+                    self.muteChanged(kind, channel_name, payload["muted"])
                 elif kind == "ToggleMediaState":
                     if payload["mediaState"] in ["paused", "stopped", "ended"]:
                         state = "false"
@@ -362,6 +370,9 @@ class MidiHandler:
             if update_type in request_types:
                 scene_name = payload["scene-name"]
                 self.sceneChanged(request_types[update_type], scene_name)
+            elif update_type == "SourceMuteStateChanged":
+                channel_name = payload["sourceName"]
+                self.muteChanged("ToggleMute", channel_name, payload["muted"])
             elif update_type == "SourceVolumeChanged":
                 self.volChanged(payload["sourceName"],payload["volume"])
 
@@ -395,6 +406,25 @@ class MidiHandler:
                     self.block=True
                     portobject._port_out.send(mido.Message('control_change', channel=0, control=int(result["msgNoC"]), value=val))
 
+    def muteChanged(self, event_type, channel_name, muted=False):
+        self.log.debug("Mute changed, event: %s, name: %s" % (event_type, channel_name))
+        # only buttons can change the mute, so we can limit our search to those
+        results = self.mappingdb.getmany(self.mappingdb.find('input_type == "button" and bidirectional == 1'))
+        if not results:
+            return
+        for result in results:
+            j = json.loads(result["action"])
+            if j["request-type"] != event_type:
+                continue
+            if j["source"] != channel_name:
+                continue
+            msgNoC = result.get("out_msgNoC", result["msgNoC"])
+            channel = result.get("out_channel", 0)
+            portobject = self.getPortObject(result)
+            if portobject and portobject._port_out:
+                if result["msg_type"] == "note_on":
+                    velocity = 2 if muted else 0
+                    portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
 
     def sceneChanged(self, event_type, scene_name):
         self.log.debug("Scene changed, event: %s, name: %s" % (event_type, scene_name))
@@ -438,6 +468,12 @@ class MidiHandler:
         # initialize bidirectional controls
         self.send_action({"action": 'GetCurrentScene', "request": "SetCurrentScene", "target": ":-)"})
         self.send_action({"action": 'GetPreviewScene', "request": "SetPreviewScene", "target": ":-)"})
+        results = self.mappingdb.getmany(self.mappingdb.find('input_type == "button" and bidirectional == 1'))
+        for result in results:
+            j = json.loads(result["action"])
+            if j["request-type"] != "ToggleMute":
+                continue
+            self.send_action({"action": 'GetMute', "request": "ToggleMute", "target": j["source"]})
 
     def send_action(self, action_request):
         action = action_request.get("action")
