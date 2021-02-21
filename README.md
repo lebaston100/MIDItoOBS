@@ -249,6 +249,7 @@ Special thanks to:
 - Behringer FCB-1010 + ESI MidiMate eX (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike))
 - Hercules DJ Control MP3
 - Behringer X-Touch Mini (tested by [me-vlad](https://github.com/me-vlad))
+- Behringer X-Touch Compact
 - Arturia MiniLab MKII (tested by [moops44](https://github.com/moops44)). See [Issue #17](https://github.com/lebaston100/MIDItoOBS/issues/17) for notes!
 - Native Instruments Maschine Mk3 (tested by [moops44](https://github.com/moops44)). See [Issue #18](https://github.com/lebaston100/MIDItoOBS/issues/18) for notes!
 - Novation LaunchControl XL (tested by [lannonbr](https://github.com/lannonbr))
