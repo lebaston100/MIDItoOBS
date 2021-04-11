@@ -1,3 +1,5 @@
+**This is a fork of <a href="https://github.com/lebaston100/MIDItoOBS">lebaston100's MIDItoOBS</a>. Please consider checking out that team's excellent work.** This fork was created for our specific needs with the APC40 mkii.
+
 
 # Midi OBS what???
 This script let's you use one or multiple MIDI controller (like the Novation Launchpad, Ableton Push, Akai LPD or the Korg nanoPAD to mention a few) to switch scenes, start/stop recording/streaming, control volume/filter settings/gain/opacity/t-bar/delay/transition time and more in [obs-studio](https://github.com/obsproject/obs-studio).
