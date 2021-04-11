@@ -86,14 +86,14 @@ args = parser.parse_args()
 def map_scale(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
 
-def get_logger(name, level=logging.INFO):
+def get_logger(name, level=logging.DEBUG):
     log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) T%(thread)d : %(message)s')
 
     std_output = logging.StreamHandler(stdout)
     std_output.setFormatter(log_format)
     std_output.setLevel(level)
 
-    file_output = logging.FileHandler(path.join(SCRIPT_DIR, "debug.log"))
+    file_output = logging.FileHandler(path.join(SCRIPT_DIR, name + "_debug.log"))
     file_output.setFormatter(log_format)
     file_output.setLevel(level)
 
@@ -227,7 +227,7 @@ class MidiHandler:
     def handle_midi_input(self, message, deviceID, deviceName):
         self.log.debug("Received %s %s %s %s %s", str(message), "from device", deviceID, "/", deviceName)
 
-        if message.type == "note_on":
+        if message.type in ["note_on", "note_off"]:
             return self.handle_midi_button(deviceID, message.channel, message.type, message.note)
 
         # `program_change` messages can be only used as regular buttons since
@@ -444,6 +444,9 @@ class MidiHandler:
                     value = 127 if j["scene-name"] == scene_name else 0
                     portobject._port_out.send(mido.Message(type="control_change", channel=channel, control=msgNoC, value=value))
                 elif result["msg_type"] == "note_on":
+                    velocity = 1 if j["scene-name"] == scene_name else 0
+                    portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
+                elif result["msg_type"] == "note_off":
                     velocity = 1 if j["scene-name"] == scene_name else 0
                     portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
 

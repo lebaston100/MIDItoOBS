@@ -152,7 +152,7 @@ def midicallback(message, deviceID, deviceName):
     print("Received message", message)
     print("from device", deviceName)
     print()
-    if message.type == "note_on": #button only
+    if message.type in ["note_on", "note_off"]: #button only
         ignore = message.note
         print("Select Action:")
         counter = 0
@@ -1694,7 +1694,7 @@ def mainLoop():
             try:
                 msg = device["object"].poll()
                 if msg:
-                    if msg.type == "note_on":
+                    if msg.type in ["note_on","note_off"]:
                         if msg.note != ignore:
                             midicallback(msg, device["id"], device["devicename"])
                             savetime1 = time.time()
