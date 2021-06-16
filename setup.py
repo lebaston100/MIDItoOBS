@@ -1036,6 +1036,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
         source = printArraySelect(tempSceneList)
+        bidirectional = askForBidirectional()
         renderArray = ["0 (Invisible)", "1 (Visible)"]
         render = printArraySelect(renderArray)
         if render == "0 (Invisible)":
@@ -1047,7 +1048,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         if scene != "--Current--":
             source = source + '", "scene-name": "' + scene
         action = jsonArchive["SetSourceVisibility"] % (source, str(render))
-        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
+        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID, bidirectional)
     elif action == "ToggleSourceVisibility":
         updateSceneList()
         tempSceneList = []
@@ -1056,16 +1057,17 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
         source = source1 = printArraySelect(tempSceneList)
+        bidirectional = askForBidirectional()
         sceneListShort.append("--Current--")
         print("\nSelect if you want to target the source only in a specific scene")
         scene = printArraySelect(sceneListShort)
         if scene != "--Current--":
             source = source + '", "scene-name": "' + scene
             action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-            saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility2", source1, scene, deviceID)
+            saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility2", source1, scene, deviceID, bidirectional)
             return
         action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-        saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility", source1, "", deviceID)
+        saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility", source1, "", deviceID, bidirectional)
     elif action == "ToggleMute":
         updateSceneList()
         updateSpecialSources()
