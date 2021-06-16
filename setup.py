@@ -1036,7 +1036,6 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
         source = printArraySelect(tempSceneList)
-        bidirectional = askForBidirectional()
         renderArray = ["0 (Invisible)", "1 (Visible)"]
         render = printArraySelect(renderArray)
         if render == "0 (Invisible)":
@@ -1045,6 +1044,7 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
             render = "true"
         sceneListShort.append("--Current--")
         scene = printArraySelect(sceneListShort)
+        bidirectional = askForBidirectional()
         if scene != "--Current--":
             source = source + '", "scene-name": "' + scene
         action = jsonArchive["SetSourceVisibility"] % (source, str(render))
@@ -1057,10 +1057,10 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
                 if line["name"] not in tempSceneList:
                     tempSceneList.append(line["name"])
         source = source1 = printArraySelect(tempSceneList)
-        bidirectional = askForBidirectional()
         sceneListShort.append("--Current--")
         print("\nSelect if you want to target the source only in a specific scene")
         scene = printArraySelect(sceneListShort)
+        bidirectional = askForBidirectional()
         if scene != "--Current--":
             source = source + '", "scene-name": "' + scene
             action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
