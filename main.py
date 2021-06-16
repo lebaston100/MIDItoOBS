@@ -86,7 +86,7 @@ args = parser.parse_args()
 def map_scale(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
 
-def get_logger(name, level=logging.INFO):
+def get_logger(name, level=logging.DEBUG):
     log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) T%(thread)d : %(message)s')
 
     std_output = logging.StreamHandler(stdout)
