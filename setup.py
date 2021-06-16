@@ -1391,15 +1391,15 @@ def saveButtonToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, dev
         db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID) & (Search.msg_channel == msg_channel))
     db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "deviceID": deviceID, "bidirectional": bidirectional})
 
-def saveTODOButtonToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, request, target, field2, deviceID):
-    print("Saved %s with note/control %s for action %s on device %s channel %s" % (msg_type, msgNoC, action, deviceID, msg_channel))
+def saveTODOButtonToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, request, target, field2, deviceID, bidirectional=False):
+    print("Saved %s with note/control %s for action %s on device %s channel %s, bidirectional: %d" % (msg_type, msgNoC, action, deviceID, msg_channel, bidirectional))
     Search = Query()
     result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC) & (Search.deviceID == deviceID) & (Search.msg_channel == msg_channel))
     if result:
         db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID) & (Search.msg_channel == msg_channel))
-        db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2})
+        db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2, "bidirectional": bidirectional})
     else:
-        db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2})
+        db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2, "bidirectional": bidirectional})
 
 def printArraySelect(array):
     while True:
