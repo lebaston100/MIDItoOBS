@@ -474,6 +474,7 @@ class MidiHandler:
             if j["request-type"] != "ToggleMute":
                 continue
             self.send_action({"action": 'GetMute', "request": "ToggleMute", "target": j["source"]})
+        #TODO: Check for Visibility Buttons 
 
     def send_action(self, action_request):
         action = action_request.get("action")
