@@ -309,6 +309,9 @@ class MidiHandler:
 
     def handle_obs_message(self, ws, message):
         self.log.debug("Received new message from OBS")
+
+        self.log.debug("Current self._action_buffer (id, template, kind): %s" % self._action_buffer)
+
         payload = json.loads(message)
 
         self.log.debug("Successfully parsed new message from OBS: %s" % message)
