@@ -378,6 +378,9 @@ class MidiHandler:
                 self.muteChanged("ToggleMute", channel_name, payload["muted"])
             elif update_type == "SourceVolumeChanged":
                 self.volChanged(payload["sourceName"],payload["volume"])
+            elif update_type == "SceneItemVisibilityChanged":
+                self.visibilityChanged(payload["scene-name"], payload["item-name"], payload["item-id"], payload["item-visible"])
+                self.log.debug("Function Done")
 
             # let's abuse the fact that obs sends many updates that we don't have to rely on a timer for the t-bar timeout
             # we don't actually want the use to make use of the timeout because it brings the hardware fader out of sync and there will
@@ -448,6 +451,41 @@ class MidiHandler:
                     portobject._port_out.send(mido.Message(type="control_change", channel=channel, control=msgNoC, value=value))
                 elif result["msg_type"] == "note_on":
                     velocity = 1 if j["scene-name"] == scene_name else 0
+                    portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
+
+    def visibilityChanged(self, scene_name, item_name, item_id, visible=False):
+        self.log.debug("Visibility changed, scene: %s, item-id: %i, item-name: %s, visible: %s" % (scene_name, item_id, item_name, visible))
+
+        # only buttons can change the scene, so we can limit our search to those
+        results = self.mappingdb.getmany(self.mappingdb.find('input_type == "button" and bidirectional == 1'))
+
+        if not results:
+            return
+        for result in results:
+            self.log.debug("--------- Loop Start")
+            self.log.debug(result)
+            j = json.loads(result["action"])
+            self.log.debug(j)
+            if j["request-type"] != "SetSceneItemProperties":
+                continue
+            self.log.debug("^^^^^^^^^ SetSceneItemProperties Request-Type Detected!!!!!!")
+            if j["item"] != item_name:
+                continue
+            self.log.debug("Item Matchs")
+            if j["scene-name"] != scene_name:
+                continue
+            self.log.debug("Scene Name Matchs")         
+            msgNoC = result.get("out_msgNoC", result["msgNoC"])
+            channel = result.get("out_channel", 0)
+            self.log.debug("msgNoC: %s, channel: %i" % (msgNoC, channel))
+            portobject = self.getPortObject(result)
+            self.log.debug(portobject._port_out)
+            if portobject and portobject._port_out:
+                if result["msg_type"] == "control_change":
+                    value = 127 if visible else 0
+                    portobject._port_out.send(mido.Message(type="control_change", channel=channel, control=msgNoC, value=value))
+                elif result["msg_type"] == "note_on":
+                    velocity = 1 if visible else 0
                     portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
 
     def handle_obs_error(self, ws, error=None):
