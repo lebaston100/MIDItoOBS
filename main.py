@@ -439,12 +439,18 @@ class MidiHandler:
         if not results:
             return
         for result in results:
+            self.log.debug("--------- Loop Top: sceneChanged")
+            self.log.debug(result)
             j = json.loads(result["action"])
+            self.log.debug(j)
             if j["request-type"] != event_type:
                 continue
+            self.log.debug("^^^^^^^^^ " + event_type + " Request-Type Detected!!!!!!")
             msgNoC = result.get("out_msgNoC", result["msgNoC"])
             channel = result.get("out_channel", 0)
+            self.log.debug("msgNoC: %s, channel: %i" % (msgNoC, channel))
             portobject = self.getPortObject(result)
+            self.log.debug(portobject._port_out)
             if portobject and portobject._port_out:
                 if result["msg_type"] == "control_change":
                     value = 127 if j["scene-name"] == scene_name else 0
@@ -452,6 +458,8 @@ class MidiHandler:
                 elif result["msg_type"] == "note_on":
                     velocity = 1 if j["scene-name"] == scene_name else 0
                     portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
+        self.log.debug("--------- Loop End: sceneChanged")
+        return
 
     def visibilityChanged(self, scene_name, item_name, item_id, visible=False):
         self.log.debug("Visibility changed, scene: %s, item-id: %i, item-name: %s, visible: %s" % (scene_name, item_id, item_name, visible))
@@ -462,7 +470,7 @@ class MidiHandler:
         if not results:
             return
         for result in results:
-            self.log.debug("--------- Loop Start")
+            self.log.debug("--------- Loop Top: visibilityChanged")
             self.log.debug(result)
             j = json.loads(result["action"])
             self.log.debug(j)
@@ -487,6 +495,8 @@ class MidiHandler:
                 elif result["msg_type"] == "note_on":
                     velocity = 1 if visible else 0
                     portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
+        self.log.debug("--------- Loop End: visibilityChanged")
+        return
 
     def handle_obs_error(self, ws, error=None):
         # Protection against potential inconsistencies in `inspect.ismethod`
