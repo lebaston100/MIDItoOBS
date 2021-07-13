@@ -419,7 +419,9 @@ class MidiHandler:
         if not results:
             return
         for result in results:
-            j = json.loads(result["action"])
+            # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
+            action = result["action"].replace('%s', 'null')
+            j = json.loads(action)
             if j["request-type"] != event_type:
                 continue
             if j["source"] != channel_name:
@@ -441,7 +443,9 @@ class MidiHandler:
         for result in results:
             self.log.debug("--------- Loop Top: sceneChanged")
             self.log.debug(result)
-            j = json.loads(result["action"])
+            # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
+            action = result["action"].replace('%s', 'null')
+            j = json.loads(action)
             self.log.debug(j)
             if j["request-type"] != event_type:
                 continue
@@ -472,7 +476,9 @@ class MidiHandler:
         for result in results:
             self.log.debug("--------- Loop Top: visibilityChanged")
             self.log.debug(result)
-            j = json.loads(result["action"])
+            # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
+            action = result["action"].replace('%s', 'null')
+            j = json.loads(action)
             self.log.debug(j)
             if j["request-type"] != "SetSceneItemProperties":
                 continue
