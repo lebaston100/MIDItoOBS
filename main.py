@@ -420,7 +420,7 @@ class MidiHandler:
             return
         for result in results:
             # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
-            action = result["action"].replace('%s', 'null')
+            action = result["action"].replace('%s', '0')
             j = json.loads(action)
             if j["request-type"] != event_type:
                 continue
@@ -444,7 +444,7 @@ class MidiHandler:
             self.log.debug("--------- Loop Top: sceneChanged")
             self.log.debug(result)
             # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
-            action = result["action"].replace('%s', 'null')
+            action = result["action"].replace('%s', '0')
             j = json.loads(action)
             self.log.debug(j)
             if j["request-type"] != event_type:
@@ -477,7 +477,7 @@ class MidiHandler:
             self.log.debug("--------- Loop Top: visibilityChanged")
             self.log.debug(result)
             # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
-            action = result["action"].replace('%s', 'null')
+            action = result["action"].replace('%s', '0')
             j = json.loads(action)
             self.log.debug(j)
             if j["request-type"] != "SetSceneItemProperties":
@@ -486,9 +486,11 @@ class MidiHandler:
             if j["item"] != item_name:
                 continue
             self.log.debug("Item Matchs")
-            if j["scene-name"] != scene_name:
-                continue
-            self.log.debug("Scene Name Matchs")         
+            if 'scene-name' in j:
+                self.log.debug("scene-name exists!") 
+                if j["scene-name"] != scene_name:
+                    continue
+            self.log.debug("Scene Name Matchs OR not scene-name set!")         
             msgNoC = result.get("out_msgNoC", result["msgNoC"])
             channel = result.get("out_channel", 0)
             self.log.debug("msgNoC: %s, channel: %i" % (msgNoC, channel))
