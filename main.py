@@ -310,11 +310,11 @@ class MidiHandler:
     def handle_obs_message(self, ws, message):
         self.log.debug("Received new message from OBS")
 
-        self.log.debug("Current self._action_buffer (id, template, kind): %s" % self._action_buffer)
-
         payload = json.loads(message)
 
         self.log.debug("Successfully parsed new message from OBS: %s" % message)
+
+        self.log.debug("Current self._action_buffer (id, template, kind): %s" % self._action_buffer)
 
         if "error" in payload:
             self.log.error("OBS returned error: %s" % payload["error"])
@@ -337,11 +337,20 @@ class MidiHandler:
 
                 del buffered_id
                 self.log.info("Action `%s` was requested by OBS" % kind)
-
                 if kind in ["ToggleSourceVisibility", "ToggleSourceVisibility2"]:
-                    # Dear lain, I so miss decent ternary operators...
-                    invisible = "false" if payload["visible"] else "true"
-                    self.obs_socket.send(template % invisible)
+
+                    #### CHECK IF THIS IS VALID JSON, I THINK THE JSON COVERSION IS MAKING AN ERROR
+                    self.log.debug("TOGGLE SOURCE VISIBILITY - Template/action:" + template)
+
+                    
+                    if "\"statusCheckFlag\"" in template:
+                        actionTemplate = json.loads(template)
+                        #self.visibilityChanged(payload["scene-name"], payload["name"], payload["itemId"], payload["visible"])
+                        self.visibilityChanged(actionTemplate["scene-name"], payload["name"], payload["itemId"], payload["visible"])
+                    else:
+                        # Dear lain, I so miss decent ternary operators...
+                        invisible = "false" if payload["visible"] else "true"
+                        self.obs_socket.send(template % invisible)
                 elif kind == "ToggleSourceFilter":
                     invisible = "false" if payload["enabled"] else "true"
                     self.obs_socket.send(template % invisible)
@@ -487,9 +496,10 @@ class MidiHandler:
                 continue
             self.log.debug("Item Matchs")
             if 'scene-name' in j:
-                self.log.debug("scene-name exists!") 
+                self.log.debug("scene-name data exists!") 
                 if j["scene-name"] != scene_name:
-                    continue
+                    self.log.debug("Scene Name Matchs!") 
+                    #continue
             self.log.debug("Scene Name Matchs OR not scene-name set!")         
             msgNoC = result.get("out_msgNoC", result["msgNoC"])
             channel = result.get("out_channel", 0)
@@ -528,12 +538,27 @@ class MidiHandler:
         self.send_action({"action": 'GetCurrentScene', "request": "SetCurrentScene", "target": ":-)"})
         self.send_action({"action": 'GetPreviewScene', "request": "SetPreviewScene", "target": ":-)"})
         results = self.mappingdb.getmany(self.mappingdb.find('input_type == "button" and bidirectional == 1'))
+
+        self.log.debug("---- Loop Top")
+
         for result in results:
-            j = json.loads(result["action"])
-            if j["request-type"] != "ToggleMute":
-                continue
-            self.send_action({"action": 'GetMute', "request": "ToggleMute", "target": j["source"]})
-        #TODO: Check for Visibility Buttons 
+            self.log.debug(result["action"])
+            # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
+            action = result["action"].replace('%s', '0')
+            j = json.loads(action)
+            if j["request-type"] == "ToggleMute":
+                self.log.debug("Requesting Status Check for ToggleMute: " + j["source"])
+                self.send_action({"action": 'GetMute', "request": "ToggleMute", "target": j["source"]})
+            elif j["request-type"] == "SetSceneItemProperties":
+                self.log.debug("Requesting Status Check for SetSceneItemProperties: " + j["item"])
+                if 'scene-name' in j:
+                    #self.send_action({"action": 'GetSceneItemProperties', "request": "ToggleSourceVisibility2", "target": j["item"], "field2": j["scene-name"]})
+                    self.send_action({"action": "{\"request-type\": \"GetSceneItemProperties\", \"statusCheckFlag\": \"true\", \"scene-name\": \"" + j["scene-name"] + "\"}", "request": "ToggleSourceVisibility2", "target": j["item"], "field2": j["scene-name"]})
+                    self.log.debug("Scene-name Exists: " + j["scene-name"])
+                else:
+                    self.send_action({"action": "{\"request-type\": \"GetSceneItemProperties\", \"statusCheckFlag\": \"false\"}", "request": "ToggleSourceVisibility", "target": j["item"]})
+                    self.log.debug("Scene-name does NOT Exist")
+        self.log.debug("---- Loop End")
 
     def send_action(self, action_request):
         action = action_request.get("action")
