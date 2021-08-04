@@ -262,7 +262,7 @@ Special thanks to:
 - Arturia MiniLab MKII (tested by [moops44](https://github.com/moops44)). See [Issue #17](https://github.com/lebaston100/MIDItoOBS/issues/17) for notes!
 - Native Instruments Maschine Mk3 (tested by [moops44](https://github.com/moops44)). See [Issue #18](https://github.com/lebaston100/MIDItoOBS/issues/18) for notes!
 - Novation LaunchControl XL (tested by [lannonbr](https://github.com/lannonbr))
-- TYST TY-1500HD Switcher (tested by [spessoni](https://github.com/spessoni)). *Works well, however DSK, PGM, PVW, TRANS EFFECT, DSK only really allow one LED to illuminate per group when setting up bidirectional mode. This is generally fine, because you would only be using one button on those groups. Also, you will need to manually update `config.json` because the MIDI input/output are separate ports.*
+- TYST TY-1500HD Switcher (tested by [spessoni](https://github.com/spessoni)). *Works well, however DSK, PGM, PVW, TRANS EFFECT, and DSK SELECT only really allow one LED to illuminate per group when setting up bidirectional mode. This is generally fine, because you would only be using one button on those groups. Also, you will need to manually update `config.json` because the MIDI input/output are separate ports.*
 - Allen & Heath Xone K2
 - AKAI APC mini
 - loopMIDI
