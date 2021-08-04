@@ -86,7 +86,7 @@ args = parser.parse_args()
 def map_scale(inp, ista, isto, osta, osto):
     return osta + (osto - osta) * ((inp - ista) / (isto - ista))
 
-def get_logger(name, level=logging.DEBUG):
+def get_logger(name, level=logging.INFO):
     log_format = logging.Formatter('[%(asctime)s] (%(levelname)s) T%(thread)d : %(message)s')
 
     std_output = logging.StreamHandler(stdout)
@@ -309,12 +309,9 @@ class MidiHandler:
 
     def handle_obs_message(self, ws, message):
         self.log.debug("Received new message from OBS")
-
         payload = json.loads(message)
 
         self.log.debug("Successfully parsed new message from OBS: %s" % message)
-
-        self.log.debug("Current self._action_buffer (id, template, kind): %s" % self._action_buffer)
 
         if "error" in payload:
             self.log.error("OBS returned error: %s" % payload["error"])
@@ -337,15 +334,10 @@ class MidiHandler:
 
                 del buffered_id
                 self.log.info("Action `%s` was requested by OBS" % kind)
+
                 if kind in ["ToggleSourceVisibility", "ToggleSourceVisibility2"]:
-
-                    #### CHECK IF THIS IS VALID JSON, I THINK THE JSON COVERSION IS MAKING AN ERROR
-                    self.log.debug("TOGGLE SOURCE VISIBILITY - Template/action:" + template)
-
-                    
                     if "\"statusCheckFlag\"" in template:
                         actionTemplate = json.loads(template)
-                        #self.visibilityChanged(payload["scene-name"], payload["name"], payload["itemId"], payload["visible"])
                         self.visibilityChanged(actionTemplate["scene-name"], payload["name"], payload["itemId"], payload["visible"])
                     else:
                         # Dear lain, I so miss decent ternary operators...
@@ -389,7 +381,6 @@ class MidiHandler:
                 self.volChanged(payload["sourceName"],payload["volume"])
             elif update_type == "SceneItemVisibilityChanged":
                 self.visibilityChanged(payload["scene-name"], payload["item-name"], payload["item-id"], payload["item-visible"])
-                self.log.debug("Function Done")
 
             # let's abuse the fact that obs sends many updates that we don't have to rely on a timer for the t-bar timeout
             # we don't actually want the use to make use of the timeout because it brings the hardware fader out of sync and there will
@@ -431,6 +422,7 @@ class MidiHandler:
             # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
             action = result["action"].replace('%s', '0')
             j = json.loads(action)
+            
             if j["request-type"] != event_type:
                 continue
             if j["source"] != channel_name:
@@ -450,20 +442,14 @@ class MidiHandler:
         if not results:
             return
         for result in results:
-            self.log.debug("--------- Loop Top: sceneChanged")
-            self.log.debug(result)
             # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
             action = result["action"].replace('%s', '0')
             j = json.loads(action)
-            self.log.debug(j)
             if j["request-type"] != event_type:
                 continue
-            self.log.debug("^^^^^^^^^ " + event_type + " Request-Type Detected!!!!!!")
             msgNoC = result.get("out_msgNoC", result["msgNoC"])
             channel = result.get("out_channel", 0)
-            self.log.debug("msgNoC: %s, channel: %i" % (msgNoC, channel))
             portobject = self.getPortObject(result)
-            self.log.debug(portobject._port_out)
             if portobject and portobject._port_out:
                 if result["msg_type"] == "control_change":
                     value = 127 if j["scene-name"] == scene_name else 0
@@ -471,8 +457,6 @@ class MidiHandler:
                 elif result["msg_type"] == "note_on":
                     velocity = 1 if j["scene-name"] == scene_name else 0
                     portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
-        self.log.debug("--------- Loop End: sceneChanged")
-        return
 
     def visibilityChanged(self, scene_name, item_name, item_id, visible=False):
         self.log.debug("Visibility changed, scene: %s, item-id: %i, item-name: %s, visible: %s" % (scene_name, item_id, item_name, visible))
@@ -482,30 +466,19 @@ class MidiHandler:
 
         if not results:
             return
+
         for result in results:
-            self.log.debug("--------- Loop Top: visibilityChanged")
             self.log.debug(result)
             # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
             action = result["action"].replace('%s', '0')
             j = json.loads(action)
-            self.log.debug(j)
             if j["request-type"] != "SetSceneItemProperties":
                 continue
-            self.log.debug("^^^^^^^^^ SetSceneItemProperties Request-Type Detected!!!!!!")
             if j["item"] != item_name:
-                continue
-            self.log.debug("Item Matchs")
-            if 'scene-name' in j:
-                self.log.debug("scene-name data exists!") 
-                if j["scene-name"] != scene_name:
-                    self.log.debug("Scene Name Matchs!") 
-                    #continue
-            self.log.debug("Scene Name Matchs OR not scene-name set!")         
+                continue       
             msgNoC = result.get("out_msgNoC", result["msgNoC"])
             channel = result.get("out_channel", 0)
-            self.log.debug("msgNoC: %s, channel: %i" % (msgNoC, channel))
             portobject = self.getPortObject(result)
-            self.log.debug(portobject._port_out)
             if portobject and portobject._port_out:
                 if result["msg_type"] == "control_change":
                     value = 127 if visible else 0
@@ -513,8 +486,6 @@ class MidiHandler:
                 elif result["msg_type"] == "note_on":
                     velocity = 1 if visible else 0
                     portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
-        self.log.debug("--------- Loop End: visibilityChanged")
-        return
 
     def handle_obs_error(self, ws, error=None):
         # Protection against potential inconsistencies in `inspect.ismethod`
@@ -538,27 +509,17 @@ class MidiHandler:
         self.send_action({"action": 'GetCurrentScene', "request": "SetCurrentScene", "target": ":-)"})
         self.send_action({"action": 'GetPreviewScene', "request": "SetPreviewScene", "target": ":-)"})
         results = self.mappingdb.getmany(self.mappingdb.find('input_type == "button" and bidirectional == 1'))
-
-        self.log.debug("---- Loop Top")
-
         for result in results:
-            self.log.debug(result["action"])
             # Some action's have % (String Formatting Operator) that need to be replaced with something to prevent invalid JSON
             action = result["action"].replace('%s', '0')
             j = json.loads(action)
             if j["request-type"] == "ToggleMute":
-                self.log.debug("Requesting Status Check for ToggleMute: " + j["source"])
                 self.send_action({"action": 'GetMute', "request": "ToggleMute", "target": j["source"]})
             elif j["request-type"] == "SetSceneItemProperties":
-                self.log.debug("Requesting Status Check for SetSceneItemProperties: " + j["item"])
                 if 'scene-name' in j:
-                    #self.send_action({"action": 'GetSceneItemProperties', "request": "ToggleSourceVisibility2", "target": j["item"], "field2": j["scene-name"]})
                     self.send_action({"action": "{\"request-type\": \"GetSceneItemProperties\", \"statusCheckFlag\": \"true\", \"scene-name\": \"" + j["scene-name"] + "\"}", "request": "ToggleSourceVisibility2", "target": j["item"], "field2": j["scene-name"]})
-                    self.log.debug("Scene-name Exists: " + j["scene-name"])
                 else:
                     self.send_action({"action": "{\"request-type\": \"GetSceneItemProperties\", \"statusCheckFlag\": \"false\"}", "request": "ToggleSourceVisibility", "target": j["item"]})
-                    self.log.debug("Scene-name does NOT Exist")
-        self.log.debug("---- Loop End")
 
     def send_action(self, action_request):
         action = action_request.get("action")
