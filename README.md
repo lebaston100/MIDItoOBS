@@ -32,7 +32,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
 
 - Download the installer and run it
 - Start OBS, open the "Tools" menu and select "websocket server settings"
-- Make sure that "Enable Websocket server" is checked, "Server Port" is 4444, "Enable authentification" is unchecked and "Enable System Tray Alerts" is unchecked(trust me, you don't want that on)
+- Make sure that "Enable Websocket server" is checked, "Server Port" is 4444, "Enable authentication" is unchecked and "Enable System Tray Alerts" is unchecked(trust me, you don't want that on)
 
 ## Setup Part 3
 
@@ -47,7 +47,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
 - Now you will be asked to press a button or move a fader on your MIDI controller, do that
 - If your midi controller sends control change messages, you will also be asked for the type of the input(fader or button)
 - Select an action from the list and press enter. The names represent the request-type in obs-websocket
-- Depending on the action, you will also be asked for the scene and source name (selecting always works by typing in the number and pressing enter). If no source of that type is available and you are promted to "select 0--1:" then you know that is no such source available in obs and the script will crash trying to select anything. Just add the required object and restart the setup script in this case. (This is already on the todo list for a further update)
+- Depending on the action, you will also be asked for the scene and source name (selecting always works by typing in the number and pressing enter). If no source of that type is available and you are prompted to "select 0--1:" then you know that is no such source available in obs and the script will crash trying to select anything. Just add the required object and restart the setup script in this case. (This is already on the todo list for a further update)
 - Available for buttons:
   - SetCurrentScene: Switches to the scene
   - SetPreviewScene: Puts a scene into preview when in studio mode
@@ -69,7 +69,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SaveReplayBuffer: Save the replay buffer
   - PauseRecording: Pauses the recording
   - ResumeRecording: Resume the recording that was previously paused
-  - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)(in ms) to a predefined value
+  - SetTransitionDuration: Sets the length of the currently selected transition if supported(fade)(in ms) to a predefined value
   - SetCurrentProfile: Changes to the selected obs profile
   - SetCurrentSceneCollection: Changes to the selected obs scene collection
   - ResetSceneItem: Resets a scene item
@@ -99,7 +99,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetSourcePosition: Sets the x or y position of a source [in px]
   - SetSourceRotation: Sets the rotation of a source [in degree]
   - SetSourceScale: Sets the scale for x/y OR both of a source (For the scaling 1 = original scale). You can also select around which position the source will be scaled(align).
-  - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)[in ms]
+  - SetTransitionDuration: Sets the length of the currently selected transition if supported(fade)[in ms]
   - SetGainFilter: Sets the volume gain value inside the gain filter of a source (For the scaling -30 to 30 is a valid range you can work in). This will automatically default to the first gain filter found in a source!
   - MoveTbar: This will move the transition T-Bar. Make sure you always completely finish a T-Bar move by going to one end to the other otherwise obs will stay in the "a transition is currently happening"-state. Be careful because the state might go "out of sync" with the physical fader if you use any other tools that move the t-bar.
   - Filter/Chroma Key - Contrast: This controls the "Contrast" value for a "Chroma Key" Filter [-1 - 1]
@@ -137,7 +137,7 @@ For a detailed description of most of the commands see the [obs-websocket protoc
 
 ### Device Management
 
-If you run the setup another time after the inital configuration you will get a dialog at startup where you can select if you want to go to the device management (1) or just continue adding new button/fader assignments with the already configured devices (2).
+If you run the setup another time after the initial configuration you will get a dialog at startup where you can select if you want to go to the device management (1) or just continue adding new button/fader assignments with the already configured devices (2).
 
 If you select 1 you have a few options:
 - 1: Move the assignments from one device over to another. This can help when you plug the controller into another USB port and then shows up under a different name (e.g. "Devicename 1" instead of "Devicename")
@@ -167,13 +167,13 @@ The bidirectional mode for the ToggleMute function sends out a note_on with velo
 This default approach might not work for some devices like the X-Touch Mini that have different notes/cc values for the same button depending if the data is coming in or going out. In this case you have to add a value named "out_msgNoC" to the config.json file for the button you want to light up with the right note/cc number.
 To change the default channel you need to add a value named "out_channel" to config.json file.
 
-If the midi out port for your device has a differnt name then the input port this will also not work without modifying the config.json file. For that first use the device configuration as mentioned above to add another device (could be one with a completly differnt name, this only saves you the work of manually adding the whole device which you could also do). Then add a value called "out_deviceID" to the button mapping entry with the value set to the id of the output device you just created. Also make sure that the output device name is the right one.
+If the midi out port for your device has a different name then the input port this will also not work without modifying the config.json file. For that first use the device configuration as mentioned above to add another device (could be one with a completely different name, this only saves you the work of manually adding the whole device which you could also do). Then add a value called "out_deviceID" to the button mapping entry with the value set to the id of the output device you just created. Also make sure that the output device name is the right one.
 
 If you want to know more take a look at [the original pull request](https://github.com/lebaston100/MIDItoOBS/pull/19)
 
 ## Updating MIDItoOBS
 
-As MIDItoOBS is just running from the folder you move/download it into, updating the programm itself is (most of the time) as easy as downloading it again like mentioned in Setup Part 3.
+As MIDItoOBS is just running from the folder you move/download it into, updating the program itself is (most of the time) as easy as downloading it again like mentioned in Setup Part 3.
 
 I highly recommend that you do not overwrite you existing files but rather backup the folder as is (including the config.json) and start with the freshly downloaded files in a new folder. Then just copy your config.json from the old backup folder into the new folder. Then try to run it.
 
@@ -216,7 +216,7 @@ You can call the main.py and the setup.py with the following command line option
 ## Troubleshooting/Support
 
 A user has reported that under certain circumstances the script(setup and main) will crash after start on Windows with "ImportError: DLL load failed: The specified module could not be found".
-If this happens to you, plase install the Visual C++ Redistributable from Microsoft. Make sure you get the x86 version if you are using python 32bit(Which is default) ([Download](https://aka.ms/vs/15/release/vc_redist.x86.exe))
+If this happens to you, please install the Visual C++ Redistributable from Microsoft. Make sure you get the x86 version if you are using python 32bit(Which is default) ([Download](https://aka.ms/vs/15/release/vc_redist.x86.exe))
 
 If you have any other problem, just open a Github issue or join my [Discord Server](https://discord.gg/PCYQJwX)
 
@@ -228,7 +228,7 @@ Special thanks to:
 - [ptitodd](https://github.com/ptitodd) (Adding program_change message handling)
 - [asquelt](https://github.com/asquelt) (making it work in python2)
 - [Alex-Dash](https://github.com/Alex-Dash) (make the volume control linear)
-- [imcrazytwkr](https://github.com/imcrazytwkr) (completly refactoring the main.py)
+- [imcrazytwkr](https://github.com/imcrazytwkr) (completely refactoring the main.py)
 - [juliscrazy](https://github.com/juliscrazy) (fix typo in readme)
 - [houz](https://github.com/houz) (midi feedback back to the controller)
 - [cpyarger](https://github.com/cpyarger) (midi feedback for faders)
