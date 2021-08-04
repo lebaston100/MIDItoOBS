@@ -169,6 +169,14 @@ To change the default channel you need to add a value named "out_channel" to con
 
 If the midi out port for your device has a different name then the input port this will also not work without modifying the config.json file. For that first use the device configuration as mentioned above to add another device (could be one with a completely different name, this only saves you the work of manually adding the whole device which you could also do). Then add a value called "out_deviceID" to the button mapping entry with the value set to the id of the output device you just created. Also make sure that the output device name is the right one.
 
+To manually check which MIDI device are available for input/output, run python then paste:
+```
+import mido
+mido.get_ioport_names()
+mido.get_input_names()
+mido.get_output_names()
+```
+
 If you want to know more take a look at [the original pull request](https://github.com/lebaston100/MIDItoOBS/pull/19)
 
 ## Updating MIDItoOBS
@@ -254,7 +262,7 @@ Special thanks to:
 - Arturia MiniLab MKII (tested by [moops44](https://github.com/moops44)). See [Issue #17](https://github.com/lebaston100/MIDItoOBS/issues/17) for notes!
 - Native Instruments Maschine Mk3 (tested by [moops44](https://github.com/moops44)). See [Issue #18](https://github.com/lebaston100/MIDItoOBS/issues/18) for notes!
 - Novation LaunchControl XL (tested by [lannonbr](https://github.com/lannonbr))
-- TYST TY-1500HD Switcher (tested by [spessoni](https://github.com/spessoni)). *Works well, however DSK, PGM, PVW, TRANS EFFECT, DSK only really allow one LED to illuminate per group. This is generally fine, because you would only be using one button on those groups.*
+- TYST TY-1500HD Switcher (tested by [spessoni](https://github.com/spessoni)). *Works well, however DSK, PGM, PVW, TRANS EFFECT, DSK only really allow one LED to illuminate per group when setting up bidirectional mode. This is generally fine, because you would only be using one button on those groups. Also, you will need to manually update `config.json` because the MIDI input/output are separate ports.*
 - Allen & Heath Xone K2
 - AKAI APC mini
 - loopMIDI
