@@ -238,11 +238,11 @@ Special thanks to:
 
 ### Tested on/with:
 
-- Windows 10 20H2
+- Windows 10 21H1
 - Ubuntu 18.04
 - Python 3.8.3:6f8c832
-- obs-studio 26.1 rc1
-- obs-websocket 4.8.0 (Nightly build for t-bar support needed or 4.9 when it comes out)
+- obs-studio 27.0.1
+- obs-websocket 4.9.1
 - KORG nanoPAD
 - KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike) and [houz](https://github.com/houz))
 - KORG padKONTROL (tested by [jberentsson](https://github.com/jberentsson))
@@ -255,7 +255,9 @@ Special thanks to:
 - Novation LaunchControl XL (tested by [lannonbr](https://github.com/lannonbr))
 - Allen & Heath Xone K2
 - AKAI APC mini
+- AKAI MPK Mini II
 - loopMIDI
+- StreamDeck Midi Plugin
 
 Let me know if you had success with your device.
 
