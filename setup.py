@@ -1537,19 +1537,6 @@ def checkIfSourceHasGainFilter(sourcename):
                 return line["name"]
     return False
 
-def checkIfSourceHasColorCorrectionFilter(sourcename):
-    ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
-    print("\nChecking source filters, plase wait")
-    ws.send('{"request-type": "GetSourceFilters", "message-id": "MIDItoOBS-checksourcecolorcorrectionfilter", "sourceName": "' + sourcename + '"}')
-    result =  ws.recv()
-    ws.close()
-    jsn = json.loads(result)
-    if jsn["message-id"] == "MIDItoOBS-checksourcecolorcorrectionfilter":
-        for line in jsn["filters"]:
-            if line["type"] == "color_filter" and line["name"] == "miditoobs-opacity":
-                return line["name"]
-    return False
-
 def getSourceFilters(sourcename):
     ws = create_connection("ws://{0}:{1}".format(serverIP, serverPort))
     print("\nChecking source filters, plase wait")
@@ -1569,7 +1556,7 @@ def getCompatibleFiltersFromSource(sourceName, filterType):
     result =  ws.recv()
     ws.close()
     jsn = json.loads(result)
-    filters = list(filter(lambda d: d["type"] == filterType, jsn["filters"]))
+    filters = list(filter(lambda d: d["type"].startswith(filterType), jsn["filters"]))
     if filters:
         return filters
     else:
