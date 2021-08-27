@@ -1572,7 +1572,7 @@ def configureDevices(switch):
             return
         elif action_select == 2:
             print("Removing all devices from the database....")
-            devdb.purge() #purge database table before adding new devices
+            devdb.truncate() # purge database table before adding new devices
         elif action_select == 3:
             removeDevice()
             return
