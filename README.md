@@ -14,7 +14,7 @@ If you want to play it safe, use the latest release. If you want to use the late
   - [python-rtmidi](https://pypi.python.org/pypi/python-rtmidi)
   - [websocket-client](https://github.com/websocket-client/websocket-client)
   - [dbj](https://github.com/pdrb/dbj)
-- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.9.0)
+- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases/tag/4.9.1) (only version 4.9.1)
   
 ## Setup Part 1
 
@@ -84,8 +84,8 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - EnableStudioMode: Enables Studio Mode
   - DisableStudioMode: Disables Studio Mode
   - ToggleStudioMode: Toggles Studio Mode
-  - TriggerHotkeyByName: Triggers an obs event, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname) for details
-  - TriggerHotkeyBySequence: Triggers an obs event based on the configured keyboard combination, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname) for details
+  - TriggerHotkeyByName: Triggers an obs event, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.1/docs/generated/protocol.md#triggerhotkeybyname) for details
+  - TriggerHotkeyBySequence: Triggers an obs event based on the configured keyboard combination, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.1/docs/generated/protocol.md#triggerhotkeybyname) for details
   - PlayPauseMedia: Start or Pause Media/VLC Source playback
   - ToggleMediaState: Toggle Media/VLC Source playback
   - RestartMedia: Restart Media/VLC Source playback
@@ -133,7 +133,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
 
 Important note about all controls that involve a scene: In OBS scenes are also sources, so all the filter controls and TakeSourceScreenshot will also work on scenes. They will be part of the list that you are prompted with in the setup.
   
-For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)
+For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/4.9.1/docs/generated/protocol.md)
 
 ### Device Management
 
