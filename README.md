@@ -97,6 +97,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
   - SetSyncOffset: Sets the sync offset of a source [in ns]
   - SetSourcePosition: Sets the x or y position of a source [in px]
+  - SetSourceCrop: Set the crop from any edge (left/right/top/bottom) [in px]
   - SetSourceRotation: Sets the rotation of a source [in degree]
   - SetSourceScale: Sets the scale for x/y OR both of a source (For the scaling 1 = original scale). You can also select around which position the source will be scaled(align).
   - SetTransitionDuration: Sets the length of the currently selected transistion if supported(fade)[in ms]

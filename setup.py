@@ -34,7 +34,7 @@ buttonActions = ["SetCurrentScene", "SetPreviewScene", "TransitionToProgram", "S
                  "StartReplayBuffer", "StopReplayBuffer", "SaveReplayBuffer", "PauseRecording", "ResumeRecording", "SetTransitionDuration", "SetCurrentProfile","SetCurrentSceneCollection",
                  "ResetSceneItem", "SetTextGDIPlusText", "SetBrowserSourceURL", "ReloadBrowserSource", "TakeSourceScreenshot", "EnableSourceFilter", "DisableSourceFilter", "ToggleSourceFilter", "SetAudioMonitorType",
                  "EnableStudioMode", "DisableStudioMode", "ToggleStudioMode", "TriggerHotkeyByName", "TriggerHotkeyBySequence", "PlayPauseMedia", "ToggleMediaState", "RestartMedia", "StopMedia", "NextMedia", "PreviousMedia"]
-faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "MoveTbar",
+faderActions = ["SetVolume", "SetSyncOffset", "SetSourcePosition", "SetSourceCrop", "SetSourceRotation", "SetSourceScale", "SetTransitionDuration", "SetGainFilter", "MoveTbar",
                 "Filter/Chroma Key - Contrast", "Filter/Chroma Key - Brightness", "Filter/Chroma Key - Gamma", "Filter/Chroma Key - Opacity", "Filter/Chroma Key - Spill Reduction", "Filter/Chroma Key - Similarity",
                 "Filter/Luma Key - Luma Max", "Filter/Luma Key - Luma Max Smooth", "Filter/Luma Key - Luma Min", "Filter/Luma Key - Luma Min Smooth", "Filter/Color Correction - Saturation", "Filter/Color Correction - Contrast",
                 "Filter/Color Correction - Brightness", "Filter/Color Correction - Gamma", "Filter/Color Correction - Hue Shift", "Filter/Color Correction - Opacity", "Filter/Color Key - Similarity", "Filter/Color Key - Smoothness", "Filter/Color Key - Brightness", "Filter/Color Key - Contrast",
@@ -65,6 +65,7 @@ jsonArchive = {"SetCurrentScene": """{"request-type": "SetCurrentScene", "messag
                "SetTextGDIPlusText": """{"request-type": "SetTextGDIPlusProperties", "message-id" : "1", "source": "%s", "text": "%s"}""",
                "SetBrowserSourceURL": """{"request-type": "SetSourceSettings", "message-id" : "1", "sourceName": "%s", "sourceSettings": {"url": "%s"}}""",
                "SetSourcePosition": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "position": {"%s": %s}}""",
+               "SetSourceCrop": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "crop": {"%s": %s}}""",
                "SetSourceRotation": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "scene-name": "%s", "item": "%s", "rotation": %s}""",
                "SetSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
                "ToggleSourceVisibility": """{"request-type": "SetSceneItemProperties", "message-id" : "1", "item": "%s", "visible": %s}""",
@@ -255,6 +256,24 @@ def setupFaderEvents(action, channel, NoC, VoV, msgType, deviceID):
             scale = askForInputScaling()
             action = jsonArchive["SetSourcePosition"] % (selected["scene"], selected["source"], tempTargetList[target], "%s")
             saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, scale, "SetSourcePosition", deviceID)
+    elif action == "SetSourceCrop":
+        updateSceneList()
+        tempSceneList = []
+        for scene in sceneListLong:
+            for line in scene["sources"]:
+                tmpOBJ = {"scene": scene["name"], "source": line["name"]}
+                tempSceneList.append(tmpOBJ)
+        counter = 0
+        for line in tempSceneList:
+            print("%s: Source '%s' in scene '%s'" % (counter, line["source"], line["scene"]))
+            counter += 1
+        selected = tempSceneList[int(input("Select 0-%s: " % str(len(tempSceneList)-1)))]
+        tempTargetList = ["top", "bottom", "left", "right"]
+        target = int(input("\n0: top\n1: bottom\n2: left\n3: right\nSelect edge to crop from (0-3): "))
+        if target in range(0, 4):
+            scale = askForInputScaling()
+            action = jsonArchive["SetSourceCrop"] % (selected["scene"], selected["source"], tempTargetList[target], "%s")
+            saveFaderToFile(channel, msgType, NoC, VoV, "fader" , action, scale, "SetSourceCrop", deviceID)
     elif action == "SetSourceRotation":
         updateSceneList()
         tempSceneList = []
