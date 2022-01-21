@@ -1063,10 +1063,11 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
             render = "true"
         sceneListShort.append("--Current--")
         scene = printArraySelect(sceneListShort)
+        bidirectional = askForBidirectional()
         if scene != "--Current--":
             source = source + '", "scene-name": "' + scene
         action = jsonArchive["SetSourceVisibility"] % (source, str(render))
-        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID)
+        saveButtonToFile(channel, msgType, NoC, VoV, "button" , action, deviceID, bidirectional)
     elif action == "ToggleSourceVisibility":
         updateSceneList()
         tempSceneList = []
@@ -1078,13 +1079,14 @@ def setupButtonEvents(action, channel, NoC, VoV, msgType, deviceID):
         sceneListShort.append("--Current--")
         print("\nSelect if you want to target the source only in a specific scene")
         scene = printArraySelect(sceneListShort)
+        bidirectional = askForBidirectional()
         if scene != "--Current--":
             source = source + '", "scene-name": "' + scene
             action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-            saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility2", source1, scene, deviceID)
+            saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility2", source1, scene, deviceID, bidirectional)
             return
         action = jsonArchive["ToggleSourceVisibility"] % (source, "%s")
-        saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility", source1, "", deviceID)
+        saveTODOButtonToFile(channel, msgType, NoC, VoV, "button" , action, "ToggleSourceVisibility", source1, "", deviceID, bidirectional)
     elif action == "ToggleMute":
         updateSceneList()
         updateSpecialSources()
@@ -1408,15 +1410,15 @@ def saveButtonToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, dev
         db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID) & (Search.msg_channel == msg_channel))
     db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "deviceID": deviceID, "bidirectional": bidirectional})
 
-def saveTODOButtonToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, request, target, field2, deviceID):
-    print("Saved %s with note/control %s for action %s on device %s channel %s" % (msg_type, msgNoC, action, deviceID, msg_channel))
+def saveTODOButtonToFile(msg_channel, msg_type, msgNoC, VoV, input_type, action, request, target, field2, deviceID, bidirectional=False):
+    print("Saved %s with note/control %s for action %s on device %s channel %s, bidirectional: %d" % (msg_type, msgNoC, action, deviceID, msg_channel, bidirectional))
     Search = Query()
     result = db.search((Search.msg_type == msg_type) & (Search.msgNoC == msgNoC) & (Search.deviceID == deviceID) & (Search.msg_channel == msg_channel))
     if result:
         db.remove((Search.msgNoC == msgNoC) & (Search.deviceID == deviceID) & (Search.msg_channel == msg_channel))
-        db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2})
+        db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2, "bidirectional": bidirectional})
     else:
-        db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2})
+        db.insert({"msg_channel": msg_channel, "msg_type": msg_type, "msgNoC": msgNoC, "msgVoV": VoV, "input_type": input_type, "action" : action, "request": request, "target": target, "deviceID": deviceID, "field2": field2, "bidirectional": bidirectional})
 
 def printArraySelect(array):
     while True:
