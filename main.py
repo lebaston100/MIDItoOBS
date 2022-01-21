@@ -338,7 +338,7 @@ class MidiHandler:
                 if kind in ["ToggleSourceVisibility", "ToggleSourceVisibility2"]:
                     if "\"statusCheckFlag\"" in template:
                         actionTemplate = json.loads(template)
-                        self.visibilityChanged(actionTemplate["scene-name"], payload["name"], payload["itemId"], payload["visible"])
+                        self.visibilityChanged(payload["name"], payload["itemId"], payload["visible"])
                     else:
                         # Dear lain, I so miss decent ternary operators...
                         invisible = "false" if payload["visible"] else "true"
@@ -380,7 +380,7 @@ class MidiHandler:
             elif update_type == "SourceVolumeChanged":
                 self.volChanged(payload["sourceName"],payload["volume"])
             elif update_type == "SceneItemVisibilityChanged":
-                self.visibilityChanged(payload["scene-name"], payload["item-name"], payload["item-id"], payload["item-visible"])
+                self.visibilityChanged(payload["item-name"], payload["item-id"], payload["item-visible"])
 
             # let's abuse the fact that obs sends many updates that we don't have to rely on a timer for the t-bar timeout
             # we don't actually want the use to make use of the timeout because it brings the hardware fader out of sync and there will
@@ -458,8 +458,8 @@ class MidiHandler:
                     velocity = 1 if j["scene-name"] == scene_name else 0
                     portobject._port_out.send(mido.Message(type="note_on", channel=channel, note=msgNoC, velocity=velocity))
 
-    def visibilityChanged(self, scene_name, item_name, item_id, visible=False):
-        self.log.debug("Visibility changed, scene: %s, item-id: %i, item-name: %s, visible: %s" % (scene_name, item_id, item_name, visible))
+    def visibilityChanged(self, item_name, item_id, visible=False):
+        self.log.debug("Visibility changed, item-id: %i, item-name: %s, visible: %s" % (item_id, item_name, visible))
 
         # only buttons can change the scene, so we can limit our search to those
         results = self.mappingdb.getmany(self.mappingdb.find('input_type == "button" and bidirectional == 1'))
