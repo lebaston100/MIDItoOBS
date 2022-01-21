@@ -14,7 +14,7 @@ If you want to play it safe, use the latest release. If you want to use the late
   - [python-rtmidi](https://pypi.python.org/pypi/python-rtmidi)
   - [websocket-client](https://github.com/websocket-client/websocket-client)
   - [dbj](https://github.com/pdrb/dbj)
-- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases) (Version >= 4.9.0)
+- The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases/tag/4.9.1) (only version 4.9.1)
   
 ## Setup Part 1
 
@@ -84,8 +84,8 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - EnableStudioMode: Enables Studio Mode
   - DisableStudioMode: Disables Studio Mode
   - ToggleStudioMode: Toggles Studio Mode
-  - TriggerHotkeyByName: Triggers an obs event, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname) for details
-  - TriggerHotkeyBySequence: Triggers an obs event based on the configured keyboard combination, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.0/docs/generated/protocol.md#triggerhotkeybyname) for details
+  - TriggerHotkeyByName: Triggers an obs event, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.1/docs/generated/protocol.md#triggerhotkeybyname) for details
+  - TriggerHotkeyBySequence: Triggers an obs event based on the configured keyboard combination, see the [obs-websocket wiki](https://github.com/Palakis/obs-websocket/blob/4.9.1/docs/generated/protocol.md#triggerhotkeybyname) for details
   - PlayPauseMedia: Start or Pause Media/VLC Source playback
   - ToggleMediaState: Toggle Media/VLC Source playback
   - RestartMedia: Restart Media/VLC Source playback
@@ -97,6 +97,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
   - SetVolume: Sets the volume of a source (unlike other solutions this will actually make the fader move in a visual linear way inside obs(Like a % slider))
   - SetSyncOffset: Sets the sync offset of a source [in ns]
   - SetSourcePosition: Sets the x or y position of a source [in px]
+  - SetSourceCrop: Set the crop from any edge (left/right/top/bottom) [in px]
   - SetSourceRotation: Sets the rotation of a source [in degree]
   - SetSourceScale: Sets the scale for x/y OR both of a source (For the scaling 1 = original scale). You can also select around which position the source will be scaled(align).
   - SetTransitionDuration: Sets the length of the currently selected transition if supported(fade)[in ms]
@@ -133,7 +134,7 @@ If you want to install all packages in one go, run "pip install -r requirements.
 
 Important note about all controls that involve a scene: In OBS scenes are also sources, so all the filter controls and TakeSourceScreenshot will also work on scenes. They will be part of the list that you are prompted with in the setup.
   
-For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/master/docs/generated/protocol.md)
+For a detailed description of most of the commands see the [obs-websocket protocol documentation](https://github.com/Palakis/obs-websocket/blob/4.9.1/docs/generated/protocol.md)
 
 ### Device Management
 
@@ -247,11 +248,11 @@ Special thanks to:
 
 ### Tested on/with:
 
-- Windows 10 20H2
+- Windows 10 21H1
 - Ubuntu 18.04
 - Python 3.8.3:6f8c832
-- obs-studio 26.1 rc1
-- obs-websocket 4.8.0 (Nightly build for t-bar support needed or 4.9 when it comes out)
+- obs-studio 27.0.1
+- obs-websocket 4.9.1
 - KORG nanoPAD
 - KORG nanoKONTROL 2 (tested by [thatGuyStrike](https://twitter.com/thatGuyStrike) and [houz](https://github.com/houz))
 - KORG padKONTROL (tested by [jberentsson](https://github.com/jberentsson))
@@ -265,8 +266,10 @@ Special thanks to:
 - TYST TY-1500HD Switcher (tested by [spessoni](https://github.com/spessoni)). *Works well, however DSK, PGM, PVW, TRANS EFFECT, and DSK SELECT only really allow one LED to illuminate per group when setting up bidirectional mode. This is generally fine, because you would only be using one button on those groups. Also, you will need to manually update `config.json` because the MIDI input/output are separate ports.*
 - Allen & Heath Xone K2
 - AKAI APC mini
+- AKAI MPK Mini II
 - loopMIDI
 - Pocket MIDI (for debug)
+- StreamDeck Midi Plugin
 
 Let me know if you had success with your device.
 
