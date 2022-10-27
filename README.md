@@ -15,8 +15,9 @@ If you want to play it safe, use the latest release. If you want to use the late
   - [python-rtmidi](https://pypi.python.org/pypi/python-rtmidi)
   - [websocket-client](https://github.com/websocket-client/websocket-client)
   - [dbj](https://github.com/pdrb/dbj)
-- If you're using OBS < 28: The [obs-websocket plugin](https://github.com/Palakis/obs-websocket/releases/tag/4.9.1) (only version 4.9.1)
-- If you're using OBS >= 28: The [obs-websocket plugin](https://github.com/obsproject/obs-websocket/releases/tag/4.9.1-compat) (version 4.9.1-compat)
+- obs-websocket plugin:
+  - If you're using OBS < 28: [obs-websocket plugin version 4.9.1](https://github.com/Palakis/obs-websocket/releases/tag/4.9.1)
+  - If you're using OBS >= 28: The [obs-websocket plugin version 4.9.1-compat](https://github.com/obsproject/obs-websocket/releases/tag/4.9.1-compat)
   
 ## Setup Part 1
 
