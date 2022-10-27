@@ -10,3 +10,4 @@ ehthumbs.db
 Thumbs.db
 config.json
 venv/
+__pycache__/
